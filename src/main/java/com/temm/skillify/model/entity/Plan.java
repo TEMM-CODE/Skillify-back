@@ -1,4 +1,4 @@
-package com.temm.skillify.entity;
+package com.temm.skillify.model.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -9,7 +9,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 @Data
 @Entity
-public class Challenge {
+public class Plan {
     @SuppressWarnings("deprecation")
     @Id
     @GeneratedValue(generator = "UUID")
