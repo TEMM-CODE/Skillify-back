@@ -1,4 +1,4 @@
-package com.temm.skillify.entity;
+package com.temm.skillify.model.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -9,7 +9,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 @Data
 @Entity
-public class CompletedEssay {
+public class Classroom {
     @SuppressWarnings("deprecation")
     @Id
     @GeneratedValue(generator = "UUID")
