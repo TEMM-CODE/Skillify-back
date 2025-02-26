@@ -3,7 +3,7 @@ package com.temm.skillify.service;
 import org.springframework.stereotype.Service;
 
 @Service
-public class EssayCorrectionMentor {
+public class EssayCorrectionServiceMentor {
     public void create() {}
     public void edit() {}
     public void get() {}
