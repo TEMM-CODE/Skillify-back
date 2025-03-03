@@ -13,6 +13,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.temm.skillify.model.enums.UserRole;
 import com.temm.skillify.security.JwtAuthenticationFilter;
 
 @Configuration
@@ -33,6 +34,7 @@ public class SecurityConfig {
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .requestMatchers("/h2-console/**").permitAll() 
                 .requestMatchers("/actuator/**").permitAll()
+                .requestMatchers("/api/student/**").permitAll()
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session

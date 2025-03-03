@@ -1,7 +1,6 @@
 package com.temm.skillify.model.entity;
 
 
-import com.temm.skillify.model.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,12 +10,15 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.Set;
 
+import com.temm.skillify.model.categories.BaseEntity;
+import com.temm.skillify.model.categories.Challengeable;
+
 @Entity
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class Practice extends BaseEntity {
+public class Practice extends BaseEntity implements Challengeable{
     
     @ManyToOne(fetch = FetchType.EAGER)
     private User mentor;
