@@ -21,6 +21,7 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "app_user")
 public class User extends BaseEntity implements UserDetails {
     
     private String name;
