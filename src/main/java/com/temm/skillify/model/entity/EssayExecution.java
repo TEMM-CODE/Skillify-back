@@ -8,20 +8,19 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-import java.util.Set;
-
 @Entity
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class Question extends BaseEntity {
-    
-    private String title;
-    
-    @OneToMany(mappedBy = "question", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    private Set<Option> options;
+public class EssayExecution extends BaseEntity {
     
     @ManyToOne(fetch = FetchType.EAGER)
-    private User mentor;
+    private User student;
+    
+    @ManyToOne(fetch = FetchType.EAGER)
+    private Essay essay;
+    
+    @Column(length = 10000)
+    private String text;
 }

@@ -1,34 +1,35 @@
 package com.temm.skillify.model.entity;
 
+
 import com.temm.skillify.model.BaseEntity;
+import com.temm.skillify.model.enums.PlanType;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-import java.util.Set;
+import java.math.BigDecimal;
+import java.util.List;
 
 @Entity
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class Course extends BaseEntity {
+public class SalesPlan extends BaseEntity {
     
-    @ManyToMany(fetch = FetchType.EAGER)
-    private Set<CourseCategory> categories;
-    
-    private String level;
     private String name;
     
-    @Column(length = 2000)
+    @Column(length = 1000)
     private String description;
     
-    @ManyToOne(fetch = FetchType.EAGER)
-    private User creator;
+    private BigDecimal price;
     
-    private Integer duration; // in minutes
+    @Enumerated(EnumType.STRING)
+    private PlanType type;
     
-    private String imageUrl;
+    @ElementCollection(fetch = FetchType.EAGER)
+    private List<String> resources;
 }

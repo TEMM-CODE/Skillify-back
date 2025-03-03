@@ -1,22 +1,28 @@
 package com.temm.skillify.model.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import lombok.Data;
-import org.hibernate.annotations.GenericGenerator;
 
-@Data
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+
+import java.util.Set;
+
+import com.temm.skillify.model.BaseEntity;
+
 @Entity
-public class Classroom {
-    @SuppressWarnings("deprecation")
-    @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(
-            name = "UUID",
-            strategy = "org.hibernate.id.UUIDGenerator"
-    )
-    @Column(length = 36)
-    private String id;
+@Data
+@EqualsAndHashCode(callSuper = true)
+@NoArgsConstructor
+@AllArgsConstructor
+public class Classroom extends BaseEntity {
+    
+    private String name;
+    
+    @ManyToMany(fetch = FetchType.EAGER)
+    private Set<User> students;
+    
+    @ManyToOne(fetch = FetchType.EAGER)
+    private User mentor;
 }

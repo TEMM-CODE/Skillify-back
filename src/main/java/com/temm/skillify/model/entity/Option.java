@@ -1,6 +1,5 @@
 package com.temm.skillify.model.entity;
 
-
 import com.temm.skillify.model.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -8,20 +7,16 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-import java.util.Set;
-
 @Entity
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class Question extends BaseEntity {
-    
-    private String title;
-    
-    @OneToMany(mappedBy = "question", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    private Set<Option> options;
+public class Option extends BaseEntity {
     
     @ManyToOne(fetch = FetchType.EAGER)
-    private User mentor;
+    private Question question;
+    
+    private String title;
+    private Boolean correct;
 }

@@ -1,5 +1,6 @@
 package com.temm.skillify.model.entity;
 
+
 import com.temm.skillify.model.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -8,22 +9,27 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Entity
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class Essay extends BaseEntity {
+public class Practice extends BaseEntity {
     
-    private String theme;
-    
-    @Column(length = 2000)
-    private String description;
-    
-    private Integer minWords;
-    private LocalDateTime maxDate;
+    @ManyToOne(fetch = FetchType.EAGER)
+    private User mentor;
     
     @ManyToOne(fetch = FetchType.EAGER)
     private Classroom classroom;
+    
+    private String title;
+    private Integer numberOfQuestions;
+    private Integer duracao; // in minutes
+    private LocalDateTime openingDate;
+    private LocalDateTime maximumDate;
+    
+    @ManyToMany(fetch = FetchType.EAGER)
+    private Set<Question> questions;
 }
