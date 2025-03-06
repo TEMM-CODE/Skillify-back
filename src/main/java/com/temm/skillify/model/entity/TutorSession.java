@@ -1,6 +1,6 @@
 package com.temm.skillify.model.entity;
 
-import com.temm.skillify.model.BaseEntity;
+import com.temm.skillify.model.categories.BaseEntity;
 import com.temm.skillify.model.enums.SessionType;
 
 import jakarta.persistence.*;

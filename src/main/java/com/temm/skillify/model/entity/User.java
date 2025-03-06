@@ -10,7 +10,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.temm.skillify.model.BaseEntity;
+import com.temm.skillify.model.categories.BaseEntity;
 import com.temm.skillify.model.enums.UserRole;
 
 import java.util.Collection;

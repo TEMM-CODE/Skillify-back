@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.Set;
 
-import com.temm.skillify.model.BaseEntity;
+import com.temm.skillify.model.categories.BaseEntity;
 
 @Entity
 @Data

@@ -1,7 +1,8 @@
 package com.temm.skillify.model.entity;
 
 
-import com.temm.skillify.model.BaseEntity;
+import com.temm.skillify.model.categories.BaseEntity;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

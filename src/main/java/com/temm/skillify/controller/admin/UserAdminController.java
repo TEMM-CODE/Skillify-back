@@ -1,11 +1,12 @@
 package com.temm.skillify.controller.admin;
 
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import com.temm.skillify.model.dto.RegisterRequest;
 import com.temm.skillify.model.entity.User;
 import com.temm.skillify.service.UserService;
 
@@ -14,7 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/admin/users")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasRole('ROLE_ADMIN')")
 public class UserAdminController {
 
     private final UserService userService;
@@ -32,8 +33,8 @@ public class UserAdminController {
     }
 
     @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody User user) {
-        return ResponseEntity.ok(userService.save(user));
+    public ResponseEntity createUser(@RequestBody RegisterRequest user) {
+        return ResponseEntity.ok(userService.create(user));
     }
 
     @PutMapping("/{id}")

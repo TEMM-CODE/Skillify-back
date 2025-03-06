@@ -1,4 +1,4 @@
-package com.temm.skillify.model;
+package com.temm.skillify.model.categories;
 
 
 import jakarta.persistence.*;

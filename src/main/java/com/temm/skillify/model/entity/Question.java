@@ -1,7 +1,6 @@
 package com.temm.skillify.model.entity;
 
 
-import com.temm.skillify.model.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,6 +8,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.util.Set;
+
+import com.temm.skillify.model.categories.BaseEntity;
 
 @Entity
 @Data

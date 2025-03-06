@@ -1,7 +1,7 @@
 package com.temm.skillify.model.entity;
 
 
-import com.temm.skillify.model.BaseEntity;
+import com.temm.skillify.model.categories.BaseEntity;
 import com.temm.skillify.model.enums.EssayConquest;
 
 import jakarta.persistence.*;
