@@ -15,7 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/student/tutor-sessions")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ESTUDANTE')")
+@PreAuthorize("hasRole('ROLE_ESTUDANTE')")
 public class TutorSessionStudentController {
 
     private final TutorSessionService sessionService;

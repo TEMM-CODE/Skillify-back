@@ -16,7 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/admin/course-lesson-categories")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasRole('ROLE_ADMIN')")
 public class CourseLessonCategoryAdminController {
     
     private final CourseLessonCategoryAdminService courseLessonCategoryAdminService;

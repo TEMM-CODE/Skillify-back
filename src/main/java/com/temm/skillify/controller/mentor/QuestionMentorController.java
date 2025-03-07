@@ -7,6 +7,7 @@ import com.temm.skillify.service.QuestionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +17,7 @@ import java.util.Set;
 @RestController
 @RequestMapping("/api/mentor/questions")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ROLE_MENTOR')")
 public class QuestionMentorController {
 
     private final QuestionService questionService;

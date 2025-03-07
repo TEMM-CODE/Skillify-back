@@ -15,7 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/admin/classroom-tokens")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasRole('ROLE_ADMIN')")
 public class ClassroomAccessTokenAdminController {
 
     private final ClassroomAccessTokenService tokenService;

@@ -12,7 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/mentor/essays")
-@PreAuthorize("hasRole('MENTOR')")
+@PreAuthorize("hasRole('ROLE_MENTOR')")
 public class EssayMentorController {
 
     @Autowired

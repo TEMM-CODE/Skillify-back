@@ -15,7 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/student/messages")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ESTUDANTE')")
+@PreAuthorize("hasRole('ROLE_ESTUDANTE')")
 public class MessageStudentController {
 
     private final MessageService messageService;

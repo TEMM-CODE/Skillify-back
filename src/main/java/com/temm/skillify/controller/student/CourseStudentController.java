@@ -16,7 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/student/courses")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ESTUDANTE')")
+@PreAuthorize("hasRole('ROLE_ESTUDANTE')")
 public class CourseStudentController {
 
     private final CourseStudentService courseStudentService;

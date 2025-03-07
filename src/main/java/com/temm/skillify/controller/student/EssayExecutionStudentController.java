@@ -14,7 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/student/essay-executions")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ESTUDANTE')")
+@PreAuthorize("hasRole('ROLE_ESTUDANTE')")
 public class EssayExecutionStudentController {
 
     private final EssayExecutionService essayExecutionService;

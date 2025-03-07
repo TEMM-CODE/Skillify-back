@@ -13,7 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/student/questions")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ESTUDANTE')")
+@PreAuthorize("hasRole('ROLE_ESTUDANTE')")
 public class QuestionStudentController {
 
     private final QuestionStudentService questionStudentService;

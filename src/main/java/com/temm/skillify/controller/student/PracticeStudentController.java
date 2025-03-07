@@ -6,6 +6,7 @@ import com.temm.skillify.model.dto.response.PracticeResponseDTO;
 import com.temm.skillify.service.PracticeStudentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,6 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/student/practices")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ROLE_ESTUDANTE')")
 public class PracticeStudentController {
     
     private final PracticeStudentService practiceService;

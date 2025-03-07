@@ -15,7 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/mentor/classrooms")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('MENTOR')")
+@PreAuthorize("hasRole('ROLE_MENTOR')")
 public class ClassroomMentorController {
 
     private final ClassroomService classroomService;

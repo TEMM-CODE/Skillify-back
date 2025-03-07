@@ -16,7 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/mentor/classroom-tokens")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('MENTOR')")
+@PreAuthorize("hasRole('ROLE_MENTOR')")
 public class ClassroomAccessTokenMentorController {
 
     private final ClassroomAccessTokenService tokenService;
