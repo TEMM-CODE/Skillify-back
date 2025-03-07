@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.temm.skillify.model.dto.AuthenticationRequest;
-import com.temm.skillify.model.dto.AuthenticationResponse;
 import com.temm.skillify.model.dto.RegisterRequest;
+import com.temm.skillify.model.dto.request.AuthenticationRequest;
+import com.temm.skillify.model.dto.response.AuthenticationResponse;
 import com.temm.skillify.service.AuthenticationService;
 
 @RestController

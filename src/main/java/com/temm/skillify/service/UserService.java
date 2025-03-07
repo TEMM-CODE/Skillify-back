@@ -7,8 +7,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.temm.skillify.model.dto.AuthenticationResponse;
 import com.temm.skillify.model.dto.RegisterRequest;
+import com.temm.skillify.model.dto.response.AuthenticationResponse;
 import com.temm.skillify.model.entity.User;
 import com.temm.skillify.model.enums.UserRole;
 import com.temm.skillify.repository.UserRepository;

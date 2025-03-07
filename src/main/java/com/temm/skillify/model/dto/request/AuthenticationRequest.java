@@ -1,4 +1,4 @@
-package com.temm.skillify.model.dto;
+package com.temm.skillify.model.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
