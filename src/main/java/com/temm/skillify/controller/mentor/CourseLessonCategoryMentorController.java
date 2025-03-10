@@ -1,8 +1,8 @@
 package com.temm.skillify.controller.mentor;
 
-import com.temm.skillify.model.entity.CourseLessonCategory;
+import com.temm.skillify.model.dto.request.CourseLessonCategoryCreateDTO;
+import com.temm.skillify.model.dto.response.CourseLessonCategoryResponseDTO;
 import com.temm.skillify.service.CourseLessonCategoryService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,23 +20,25 @@ public class CourseLessonCategoryMentorController {
     private CourseLessonCategoryService categoryService;
 
     @GetMapping("/course/{courseId}")
-    public ResponseEntity<List<CourseLessonCategory>> getCategoriesByCourse(@PathVariable String courseId) {
+    public ResponseEntity<List<CourseLessonCategoryResponseDTO>> getCategoriesByCourse(@PathVariable String courseId) {
         return ResponseEntity.ok(categoryService.getCategoriesByCourse(courseId));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CourseLessonCategory> getCategoryById(@PathVariable String id) {
+    public ResponseEntity<CourseLessonCategoryResponseDTO> getCategoryById(@PathVariable String id) {
         return ResponseEntity.ok(categoryService.getCategoryById(id));
     }
 
     @PostMapping
-    public ResponseEntity<CourseLessonCategory> createCategory(@RequestBody CourseLessonCategory category) {
-        return new ResponseEntity<>(categoryService.createCategory(category), HttpStatus.CREATED);
+    public ResponseEntity<CourseLessonCategoryResponseDTO> createCategory(@RequestBody CourseLessonCategoryCreateDTO categoryDTO) {
+        return new ResponseEntity<>(categoryService.createCategory(categoryDTO), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CourseLessonCategory> updateCategory(@PathVariable String id, @RequestBody CourseLessonCategory category) {
-        return ResponseEntity.ok(categoryService.updateCategory(id, category));
+    public ResponseEntity<CourseLessonCategoryResponseDTO> updateCategory(
+            @PathVariable String id, 
+            @RequestBody CourseLessonCategoryCreateDTO categoryDTO) {
+        return ResponseEntity.ok(categoryService.updateCategory(id, categoryDTO));
     }
 
     @DeleteMapping("/{id}")

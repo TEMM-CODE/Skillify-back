@@ -1,9 +1,13 @@
 package com.temm.skillify.service;
 
+
+import com.temm.skillify.model.dto.request.PracticeCreateDTO;
+import com.temm.skillify.model.dto.response.PracticeResponseDTO;
 import com.temm.skillify.model.entity.Classroom;
 import com.temm.skillify.model.entity.Practice;
 import com.temm.skillify.model.entity.Question;
 import com.temm.skillify.model.entity.User;
+import com.temm.skillify.model.mapper.PracticeMapper;
 import com.temm.skillify.repository.ClassroomRepository;
 import com.temm.skillify.repository.PracticeRepository;
 import com.temm.skillify.repository.QuestionRepository;
@@ -14,6 +18,8 @@ import org.springframework.stereotype.Service;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,63 +29,90 @@ public class PracticeService {
     private final QuestionRepository questionRepository;
     private final ClassroomRepository classroomRepository;
     private final UserService userService;
+    private final PracticeMapper practiceMapper;
 
-    public List<Practice> findAllByMentor(Authentication authentication) {
+    public List<PracticeResponseDTO> findAllByMentor(Authentication authentication) {
         User mentor = userService.getUserFromAuthentication(authentication);
-        return practiceRepository.findByMentor(mentor);
+        List<Practice> practices = practiceRepository.findByMentor(mentor);
+        return practices.stream()
+                .map(practiceMapper::toResponseDTO)
+                .collect(Collectors.toList());
     }
 
-    public Practice findByIdAndMentor(String id, Authentication authentication) {
+    public PracticeResponseDTO findByIdAndMentor(String id, Authentication authentication) {
         User mentor = userService.getUserFromAuthentication(authentication);
-        return practiceRepository.findById(id)
-                .filter(practice -> practice.getMentor().getId().equals(mentor.getId()))
+        Practice practice = practiceRepository.findById(id)
+                .filter(p -> p.getMentor().getId().equals(mentor.getId()))
                 .orElseThrow(() -> new EntityNotFoundException("Practice not found or you don't have permission"));
+        return practiceMapper.toResponseDTO(practice);
     }
 
-    public List<Practice> findByClassroomAndMentor(String classroomId, Authentication authentication) {
+    public List<PracticeResponseDTO> findByClassroomAndMentor(String classroomId, Authentication authentication) {
         User mentor = userService.getUserFromAuthentication(authentication);
         Classroom classroom = classroomRepository.findByIdAndMentor(classroomId, mentor)
                 .orElseThrow(() -> new EntityNotFoundException("Classroom not found or you don't have permission"));
-        return practiceRepository.findByClassroom(classroom);
+        List<Practice> practices = practiceRepository.findByClassroom(classroom);
+        return practices.stream()
+                .map(practiceMapper::toResponseDTO)
+                .collect(Collectors.toList());
     }
 
-    public Practice create(Practice practice, Authentication authentication) {
+    public PracticeResponseDTO create(PracticeCreateDTO practiceDTO, Authentication authentication) {
         User mentor = userService.getUserFromAuthentication(authentication);
+        Practice practice = practiceMapper.toEntity(practiceDTO);
         practice.setMentor(mentor);
         
-        if (practice.getClassroom() != null) {
-            Classroom classroom = classroomRepository.findByIdAndMentor(practice.getClassroom().getId(), mentor)
+        if (practiceDTO.getClassroomId() != null) {
+            Classroom classroom = classroomRepository.findByIdAndMentor(practiceDTO.getClassroomId(), mentor)
                     .orElseThrow(() -> new EntityNotFoundException("Classroom not found or you don't have permission"));
             practice.setClassroom(classroom);
         }
         
-        if (practice.getQuestions() == null) {
+        if (practiceDTO.getQuestionIds() != null && !practiceDTO.getQuestionIds().isEmpty()) {
+            Set<Question> questions = practiceDTO.getQuestionIds().stream()
+                    .map(questionId -> questionRepository.findById(questionId)
+                            .filter(q -> q.getMentor().getId().equals(mentor.getId()))
+                            .orElseThrow(() -> new EntityNotFoundException("Question not found or you don't have permission: " + questionId)))
+                    .collect(Collectors.toSet());
+            practice.setQuestions(questions);
+        } else {
             practice.setQuestions(new HashSet<>());
         }
         
-        return practiceRepository.save(practice);
+        Practice savedPractice = practiceRepository.save(practice);
+        return practiceMapper.toResponseDTO(savedPractice);
     }
 
-    public Practice update(String id, Practice updatedPractice, Authentication authentication) {
+    public PracticeResponseDTO update(String id, PracticeCreateDTO practiceDTO, Authentication authentication) {
         User mentor = userService.getUserFromAuthentication(authentication);
         
         Practice practice = practiceRepository.findById(id)
                 .filter(p -> p.getMentor().getId().equals(mentor.getId()))
                 .orElseThrow(() -> new EntityNotFoundException("Practice not found or you don't have permission"));
         
-        practice.setTitle(updatedPractice.getTitle());
-        practice.setNumberOfQuestions(updatedPractice.getNumberOfQuestions());
-        practice.setDuracao(updatedPractice.getDuracao());
-        practice.setOpeningDate(updatedPractice.getOpeningDate());
-        practice.setMaximumDate(updatedPractice.getMaximumDate());
+        practice.setTitle(practiceDTO.getTitle());
+        practice.setNumberOfQuestions(practiceDTO.getNumberOfQuestions());
+        practice.setDuracao(practiceDTO.getDuracao());
+        practice.setOpeningDate(practiceDTO.getOpeningDate());
+        practice.setMaximumDate(practiceDTO.getMaximumDate());
         
-        if (updatedPractice.getClassroom() != null) {
-            Classroom classroom = classroomRepository.findByIdAndMentor(updatedPractice.getClassroom().getId(), mentor)
+        if (practiceDTO.getClassroomId() != null) {
+            Classroom classroom = classroomRepository.findByIdAndMentor(practiceDTO.getClassroomId(), mentor)
                     .orElseThrow(() -> new EntityNotFoundException("Classroom not found or you don't have permission"));
             practice.setClassroom(classroom);
         }
         
-        return practiceRepository.save(practice);
+        if (practiceDTO.getQuestionIds() != null) {
+            Set<Question> questions = practiceDTO.getQuestionIds().stream()
+                    .map(questionId -> questionRepository.findById(questionId)
+                            .filter(q -> q.getMentor().getId().equals(mentor.getId()))
+                            .orElseThrow(() -> new EntityNotFoundException("Question not found or you don't have permission: " + questionId)))
+                    .collect(Collectors.toSet());
+            practice.setQuestions(questions);
+        }
+        
+        Practice updatedPractice = practiceRepository.save(practice);
+        return practiceMapper.toResponseDTO(updatedPractice);
     }
 
     public void delete(String id, Authentication authentication) {
@@ -92,7 +125,7 @@ public class PracticeService {
         practiceRepository.delete(practice);
     }
 
-    public Practice addQuestion(String practiceId, String questionId, Authentication authentication) {
+    public PracticeResponseDTO addQuestion(String practiceId, String questionId, Authentication authentication) {
         User mentor = userService.getUserFromAuthentication(authentication);
         
         Practice practice = practiceRepository.findById(practiceId)
@@ -104,10 +137,11 @@ public class PracticeService {
                 .orElseThrow(() -> new EntityNotFoundException("Question not found or you don't have permission"));
         
         practice.getQuestions().add(question);
-        return practiceRepository.save(practice);
+        Practice updatedPractice = practiceRepository.save(practice);
+        return practiceMapper.toResponseDTO(updatedPractice);
     }
 
-    public Practice removeQuestion(String practiceId, String questionId, Authentication authentication) {
+    public PracticeResponseDTO removeQuestion(String practiceId, String questionId, Authentication authentication) {
         User mentor = userService.getUserFromAuthentication(authentication);
         
         Practice practice = practiceRepository.findById(practiceId)
@@ -118,6 +152,7 @@ public class PracticeService {
                 .orElseThrow(() -> new EntityNotFoundException("Question not found"));
         
         practice.getQuestions().remove(question);
-        return practiceRepository.save(practice);
+        Practice updatedPractice = practiceRepository.save(practice);
+        return practiceMapper.toResponseDTO(updatedPractice);
     }
 }

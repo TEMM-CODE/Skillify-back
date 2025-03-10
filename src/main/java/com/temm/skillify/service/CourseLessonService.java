@@ -1,10 +1,13 @@
 package com.temm.skillify.service;
 
-
+import com.temm.skillify.model.dto.request.CourseLessonCreateDTO;
+import com.temm.skillify.model.dto.response.CourseLessonResponseDTO;
 import com.temm.skillify.model.entity.Course;
 import com.temm.skillify.model.entity.CourseLesson;
 import com.temm.skillify.model.entity.CourseLessonCategory;
+import com.temm.skillify.model.entity.Classroom;
 import com.temm.skillify.model.entity.User;
+import com.temm.skillify.repository.ClassroomRepository;
 import com.temm.skillify.repository.CourseLessonCategoryRepository;
 import com.temm.skillify.repository.CourseLessonRepository;
 import com.temm.skillify.repository.CourseRepository;
@@ -28,6 +31,9 @@ public class CourseLessonService {
 
     @Autowired
     private CourseLessonCategoryRepository courseLessonCategoryRepository;
+    
+    @Autowired
+    private ClassroomRepository classroomRepository;
 
     public List<CourseLesson> getAllLessonsByMentor() {
         User currentUser = getCurrentUser();
@@ -78,40 +84,62 @@ public class CourseLessonService {
         return lesson;
     }
 
-    public CourseLesson createLesson(CourseLesson lesson) {
+    public CourseLesson createLesson(CourseLessonCreateDTO createDTO) {
         // Verify mentor has access to the course
         User currentUser = getCurrentUser();
-        Course course = courseRepository.findById(lesson.getCourse().getId())
+        Course course = courseRepository.findById(createDTO.getCourseId())
                 .orElseThrow(() -> new NoSuchElementException("Course not found"));
         
         if (!course.getCreator().getId().equals(currentUser.getId())) {
             throw new SecurityException("You don't have permission to create lessons for this course");
         }
         
-        // If a category is provided, verify access
-        if (lesson.getCourseLessonCategory() != null) {
-            CourseLessonCategory category = courseLessonCategoryRepository.findById(lesson.getCourseLessonCategory().getId())
+        // Create new lesson
+        CourseLesson lesson = new CourseLesson();
+        lesson.setCourse(course);
+        lesson.setName(createDTO.getName());
+        lesson.setDuration(createDTO.getDuration());
+        lesson.setFiles(createDTO.getFiles());
+        
+        // If a category is provided, verify access and set it
+        if (createDTO.getCourseLessonCategoryId() != null) {
+            CourseLessonCategory category = courseLessonCategoryRepository.findById(createDTO.getCourseLessonCategoryId())
                     .orElseThrow(() -> new NoSuchElementException("Category not found"));
             
             if (!category.getCourse().getId().equals(course.getId())) {
                 throw new IllegalArgumentException("Category does not belong to the specified course");
             }
+            
+            lesson.setCourseLessonCategory(category);
+        }
+        
+        // If classroom is provided, set it
+        if (createDTO.getClassroomId() != null) {
+            Classroom classroom = classroomRepository.findById(createDTO.getClassroomId())
+                    .orElseThrow(() -> new NoSuchElementException("Classroom not found"));
+            
+            // Verify mentor has access to this classroom (optional check)
+            if (!classroom.getMentor().getId().equals(currentUser.getId())) {
+                throw new SecurityException("You don't have permission to use this classroom");
+            }
+            
+            lesson.setClassroom(classroom);
         }
         
         return courseLessonRepository.save(lesson);
     }
 
-    public CourseLesson updateLesson(String id, CourseLesson updatedLesson) {
+    public CourseLesson updateLesson(String id, CourseLessonCreateDTO updateDTO) {
         CourseLesson existingLesson = getLessonById(id);
         
-        // Update fields
-        existingLesson.setName(updatedLesson.getName());
-        existingLesson.setDuration(updatedLesson.getDuration());
-        existingLesson.setFiles(updatedLesson.getFiles());
+        // Update basic fields
+        existingLesson.setName(updateDTO.getName());
+        existingLesson.setDuration(updateDTO.getDuration());
+        existingLesson.setFiles(updateDTO.getFiles());
         
         // If category is being updated, verify access
-        if (updatedLesson.getCourseLessonCategory() != null) {
-            CourseLessonCategory category = courseLessonCategoryRepository.findById(updatedLesson.getCourseLessonCategory().getId())
+        if (updateDTO.getCourseLessonCategoryId() != null) {
+            CourseLessonCategory category = courseLessonCategoryRepository.findById(updateDTO.getCourseLessonCategoryId())
                     .orElseThrow(() -> new NoSuchElementException("Category not found"));
             
             if (!category.getCourse().getId().equals(existingLesson.getCourse().getId())) {
@@ -122,8 +150,17 @@ public class CourseLessonService {
         }
         
         // If classroom is being updated
-        if (updatedLesson.getClassroom() != null) {
-            existingLesson.setClassroom(updatedLesson.getClassroom());
+        if (updateDTO.getClassroomId() != null) {
+            Classroom classroom = classroomRepository.findById(updateDTO.getClassroomId())
+                    .orElseThrow(() -> new NoSuchElementException("Classroom not found"));
+            
+            // Verify mentor has access to this classroom (optional check)
+            User currentUser = getCurrentUser();
+            if (!classroom.getMentor().getId().equals(currentUser.getId())) {
+                throw new SecurityException("You don't have permission to use this classroom");
+            }
+            
+            existingLesson.setClassroom(classroom);
         }
         
         return courseLessonRepository.save(existingLesson);

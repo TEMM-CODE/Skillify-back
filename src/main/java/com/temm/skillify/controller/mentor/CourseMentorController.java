@@ -1,6 +1,8 @@
 package com.temm.skillify.controller.mentor;
 
-import com.temm.skillify.model.entity.Course;
+
+import com.temm.skillify.model.dto.request.CourseCreateDTO;
+import com.temm.skillify.model.dto.response.CourseResponseDTO;
 import com.temm.skillify.service.CourseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,24 +20,25 @@ public class CourseMentorController {
     @Autowired
     private CourseService courseMentorService;
 
+
     @GetMapping
-    public ResponseEntity<List<Course>> getAllCoursesByMentor() {
+    public ResponseEntity<List<CourseResponseDTO>> getAllCoursesByMentor() {
         return ResponseEntity.ok(courseMentorService.getAllCoursesByCurrentMentor());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Course> getCourseById(@PathVariable String id) {
+    public ResponseEntity<CourseResponseDTO> getCourseById(@PathVariable String id) {
         return ResponseEntity.ok(courseMentorService.getCourseById(id));
     }
 
     @PostMapping
-    public ResponseEntity<Course> createCourse(@RequestBody Course course) {
-        return new ResponseEntity<>(courseMentorService.createCourse(course), HttpStatus.CREATED);
+    public ResponseEntity<CourseResponseDTO> createCourse(@RequestBody CourseCreateDTO courseCreateDTO) {
+        return new ResponseEntity<>(courseMentorService.createCourse(courseCreateDTO), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Course> updateCourse(@PathVariable String id, @RequestBody Course course) {
-        return ResponseEntity.ok(courseMentorService.updateCourse(id, course));
+    public ResponseEntity<CourseResponseDTO> updateCourse(@PathVariable String id, @RequestBody CourseCreateDTO courseCreateDTO) {
+        return ResponseEntity.ok(courseMentorService.updateCourse(id, courseCreateDTO));
     }
 
     @DeleteMapping("/{id}")

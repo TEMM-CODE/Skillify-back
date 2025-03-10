@@ -1,13 +1,14 @@
 package com.temm.skillify.service;
 
-
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import com.temm.skillify.model.dto.request.TutorSessionCreateDTO;
+import com.temm.skillify.model.dto.response.TutorSessionResponseDTO;
 import com.temm.skillify.model.entity.TutorSession;
 import com.temm.skillify.model.entity.User;
+import com.temm.skillify.model.mapper.TutorSessionMapper;
 import com.temm.skillify.repository.TutorSessionRepository;
 import com.temm.skillify.repository.UserRepository;
 
@@ -26,29 +27,39 @@ public class TutorSessionService {
     private final ClassroomService classroomService;
     private final UserService userService;
     private final UserRepository userRepository;
+    private final TutorSessionMapper tutorSessionMapper;
 
-    public List<TutorSession> findAll() {
-        return sessionRepository.findAll();
+    public List<TutorSessionResponseDTO> findAll() {
+        return sessionRepository.findAll().stream()
+                .map(tutorSessionMapper::toResponseDTO)
+                .collect(Collectors.toList());
     }
 
-    public List<TutorSession> findByMentor(User mentor) {
-        return sessionRepository.findByMentor(mentor);
+    public List<TutorSessionResponseDTO> findByMentor(User mentor) {
+        return sessionRepository.findByMentor(mentor).stream()
+                .map(tutorSessionMapper::toResponseDTO)
+                .collect(Collectors.toList());
     }
 
-    public List<TutorSession> findByStudent(User student) {
-        return sessionRepository.findByStudent(student);
+    public List<TutorSessionResponseDTO> findByStudent(User student) {
+        return sessionRepository.findByStudent(student).stream()
+                .map(tutorSessionMapper::toResponseDTO)
+                .collect(Collectors.toList());
     }
 
-    public List<TutorSession> findByMentorAndDate(User mentor, LocalDate date) {
-        return sessionRepository.findByMentorAndDate(mentor, date);
+    public List<TutorSessionResponseDTO> findByMentorAndDate(User mentor, LocalDate date) {
+        return sessionRepository.findByMentorAndDate(mentor, date).stream()
+                .map(tutorSessionMapper::toResponseDTO)
+                .collect(Collectors.toList());
     }
 
-    public Optional<TutorSession> findById(String id) {
-        return sessionRepository.findById(id);
+    public Optional<TutorSessionResponseDTO> findById(String id) {
+        return sessionRepository.findById(id)
+                .map(tutorSessionMapper::toResponseDTO);
     }
 
-    public TutorSession save(TutorSession session) {
-        return sessionRepository.save(session);
+    public TutorSessionResponseDTO save(TutorSession session) {
+        return tutorSessionMapper.toResponseDTO(sessionRepository.save(session));
     }
 
     public void deleteById(String id) {
@@ -62,76 +73,77 @@ public class TutorSessionService {
                 .anyMatch(classroom -> classroom.getMentor().equals(potentialMentor));
     }
 
-     public List<TutorSession> findAllByMentor(Authentication authentication) {
+    public List<TutorSessionResponseDTO> findAllByMentor(Authentication authentication) {
         User mentor = userService.getUserFromAuthentication(authentication);
-        return sessionRepository.findByMentor(mentor);
+        return sessionRepository.findByMentor(mentor).stream()
+                .map(tutorSessionMapper::toResponseDTO)
+                .collect(Collectors.toList());
     }
 
-    public TutorSession findByIdAndMentor(String id, Authentication authentication) {
+    public TutorSessionResponseDTO findByIdAndMentor(String id, Authentication authentication) {
         User mentor = userService.getUserFromAuthentication(authentication);
         return sessionRepository.findById(id)
                 .filter(session -> session.getMentor().getId().equals(mentor.getId()))
+                .map(tutorSessionMapper::toResponseDTO)
                 .orElseThrow(() -> new EntityNotFoundException("Tutor session not found or you don't have permission"));
     }
 
-    public List<TutorSession> findByMentorAndDate(LocalDate date, Authentication authentication) {
+    public List<TutorSessionResponseDTO> findByMentorAndDate(LocalDate date, Authentication authentication) {
         User mentor = userService.getUserFromAuthentication(authentication);
-        return sessionRepository.findByMentorAndDate(mentor, date);
+        return sessionRepository.findByMentorAndDate(mentor, date).stream()
+                .map(tutorSessionMapper::toResponseDTO)
+                .collect(Collectors.toList());
     }
 
-    public List<TutorSession> findByMentorAndStudent(String studentId, Authentication authentication) {
+    public List<TutorSessionResponseDTO> findByMentorAndStudent(String studentId, Authentication authentication) {
         User mentor = userService.getUserFromAuthentication(authentication);
         User student = userRepository.findById(studentId)
                 .orElseThrow(() -> new EntityNotFoundException("Student not found"));
         
         return sessionRepository.findByMentor(mentor).stream()
                 .filter(session -> session.getStudent() != null && session.getStudent().getId().equals(studentId))
+                .map(tutorSessionMapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
 
-    public TutorSession create(TutorSession session, Authentication authentication) {
+    public TutorSessionResponseDTO create(TutorSessionCreateDTO dto, Authentication authentication) {
         User mentor = userService.getUserFromAuthentication(authentication);
+        TutorSession session = tutorSessionMapper.toEntity(dto);
         session.setMentor(mentor);
-        
-        if (session.getStudent() != null) {
-            User student = userRepository.findById(session.getStudent().getId())
-                    .orElseThrow(() -> new EntityNotFoundException("Student not found"));
-            session.setStudent(student);
-        }
         
         // If dateHour is set but date is not, extract date from dateHour
         if (session.getDateHour() != null && session.getDate() == null) {
             session.setDate(session.getDateHour().toLocalDate());
         }
         
-        return sessionRepository.save(session);
+        return tutorSessionMapper.toResponseDTO(sessionRepository.save(session));
     }
 
-    public TutorSession update(String id, TutorSession updatedSession, Authentication authentication) {
+    public TutorSessionResponseDTO update(String id, TutorSessionCreateDTO dto, Authentication authentication) {
         User mentor = userService.getUserFromAuthentication(authentication);
         
         TutorSession session = sessionRepository.findById(id)
                 .filter(s -> s.getMentor().getId().equals(mentor.getId()))
                 .orElseThrow(() -> new EntityNotFoundException("Tutor session not found or you don't have permission"));
         
-        session.setTitle(updatedSession.getTitle());
-        session.setType(updatedSession.getType());
-        session.setLink(updatedSession.getLink());
+        session.setTitle(dto.getTitle());
+        session.setType(dto.getType());
+        session.setLink(dto.getLink());
         
-        if (updatedSession.getDateHour() != null) {
-            session.setDateHour(updatedSession.getDateHour());
-            session.setDate(updatedSession.getDateHour().toLocalDate());
-        } else if (updatedSession.getDate() != null) {
-            session.setDate(updatedSession.getDate());
+        if (dto.getDateHour() != null) {
+            session.setDateHour(dto.getDateHour());
+            session.setDate(dto.getDateHour().toLocalDate());
+        } else if (dto.getDate() != null) {
+            session.setDate(dto.getDate());
         }
         
-        if (updatedSession.getStudent() != null) {
-            User student = userRepository.findById(updatedSession.getStudent().getId())
+        if (dto.getStudentId() != null && !dto.getStudentId().isEmpty()) {
+            User student = userRepository.findById(dto.getStudentId())
                     .orElseThrow(() -> new EntityNotFoundException("Student not found"));
             session.setStudent(student);
         }
         
-        return sessionRepository.save(session);
+        return tutorSessionMapper.toResponseDTO(sessionRepository.save(session));
     }
 
     public void delete(String id, Authentication authentication) {
@@ -143,5 +155,4 @@ public class TutorSessionService {
         
         sessionRepository.delete(session);
     }
-
 }

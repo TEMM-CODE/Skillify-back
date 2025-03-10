@@ -1,6 +1,7 @@
 package com.temm.skillify.controller.mentor;
 
-import com.temm.skillify.model.entity.Essay;
+import com.temm.skillify.model.dto.request.EssayCreateDTO;
+import com.temm.skillify.model.dto.response.EssayResponseDTO;
 import com.temm.skillify.service.EssayService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,31 +17,31 @@ import java.util.List;
 public class EssayMentorController {
 
     @Autowired
-    private EssayService essayMentorService;
+    private EssayService essayService;
 
     @GetMapping("/classroom/{classroomId}")
-    public ResponseEntity<List<Essay>> getEssaysByClassroom(@PathVariable String classroomId) {
-        return ResponseEntity.ok(essayMentorService.getEssaysByClassroom(classroomId));
+    public ResponseEntity<List<EssayResponseDTO>> getEssaysByClassroom(@PathVariable String classroomId) {
+        return ResponseEntity.ok(essayService.getEssaysByClassroom(classroomId));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Essay> getEssayById(@PathVariable String id) {
-        return ResponseEntity.ok(essayMentorService.getEssayById(id));
+    public ResponseEntity<EssayResponseDTO> getEssayById(@PathVariable String id) {
+        return ResponseEntity.ok(essayService.getEssayById(id));
     }
 
     @PostMapping
-    public ResponseEntity<Essay> createEssay(@RequestBody Essay essay) {
-        return new ResponseEntity<>(essayMentorService.createEssay(essay), HttpStatus.CREATED);
+    public ResponseEntity<EssayResponseDTO> createEssay(@RequestBody EssayCreateDTO essayCreateDTO) {
+        return new ResponseEntity<>(essayService.createEssay(essayCreateDTO), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Essay> updateEssay(@PathVariable String id, @RequestBody Essay essay) {
-        return ResponseEntity.ok(essayMentorService.updateEssay(id, essay));
+    public ResponseEntity<EssayResponseDTO> updateEssay(@PathVariable String id, @RequestBody EssayCreateDTO essayCreateDTO) {
+        return ResponseEntity.ok(essayService.updateEssay(id, essayCreateDTO));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteEssay(@PathVariable String id) {
-        essayMentorService.deleteEssay(id);
+        essayService.deleteEssay(id);
         return ResponseEntity.noContent().build();
     }
 }

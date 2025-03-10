@@ -1,8 +1,11 @@
 package com.temm.skillify.service;
 
+import com.temm.skillify.model.dto.request.QuestionCreateDTO;
+import com.temm.skillify.model.dto.response.QuestionResponseDTO;
 import com.temm.skillify.model.entity.Option;
 import com.temm.skillify.model.entity.Question;
 import com.temm.skillify.model.entity.User;
+import com.temm.skillify.model.mapper.QuestionMapper;
 import com.temm.skillify.repository.OptionRepository;
 import com.temm.skillify.repository.QuestionRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,50 +25,46 @@ public class QuestionService {
     private final QuestionRepository questionRepository;
     private final OptionRepository optionRepository;
     private final UserService userService;
+    private final QuestionMapper questionMapper;
 
-    public List<Question> findAllByMentor(Authentication authentication) {
+    public List<QuestionResponseDTO> findAllByMentor(Authentication authentication) {
         User mentor = userService.getUserFromAuthentication(authentication);
-        return questionRepository.findByMentor(mentor);
+        List<Question> questions = questionRepository.findByMentor(mentor);
+        return questions.stream()
+                .map(questionMapper::toResponseDTO)
+                .collect(Collectors.toList());
     }
 
-    public Question findByIdAndMentor(String id, Authentication authentication) {
+    public QuestionResponseDTO findByIdAndMentor(String id, Authentication authentication) {
         User mentor = userService.getUserFromAuthentication(authentication);
-        return questionRepository.findById(id)
-                .filter(question -> question.getMentor().getId().equals(mentor.getId()))
+        Question question = questionRepository.findById(id)
+                .filter(q -> q.getMentor().getId().equals(mentor.getId()))
                 .orElseThrow(() -> new EntityNotFoundException("Question not found or you don't have permission"));
+        return questionMapper.toResponseDTO(question);
     }
 
-    public Question create(Question question, Authentication authentication) {
+    public QuestionResponseDTO create(QuestionCreateDTO questionDTO, Authentication authentication) {
         User mentor = userService.getUserFromAuthentication(authentication);
-        question.setMentor(mentor);
         
-        if (question.getOptions() == null) {
-            question.setOptions(new HashSet<>());
-        }
+        Question question = new Question();
+        question.setTitle(questionDTO.getTitle());
+        question.setMentor(mentor);
+        question.setOptions(new HashSet<>());
         
         Question savedQuestion = questionRepository.save(question);
-        
-        // Save options if present and set the question reference
-        if (question.getOptions() != null && !question.getOptions().isEmpty()) {
-            for (Option option : question.getOptions()) {
-                option.setQuestion(savedQuestion);
-                optionRepository.save(option);
-            }
-        }
-        
-        return savedQuestion;
+        return questionMapper.toResponseDTO(savedQuestion);
     }
 
-    public Question update(String id, Question updatedQuestion, Authentication authentication) {
+    public QuestionResponseDTO update(String id, QuestionCreateDTO questionDTO, Authentication authentication) {
         User mentor = userService.getUserFromAuthentication(authentication);
         
         Question question = questionRepository.findById(id)
                 .filter(q -> q.getMentor().getId().equals(mentor.getId()))
                 .orElseThrow(() -> new EntityNotFoundException("Question not found or you don't have permission"));
         
-        question.setTitle(updatedQuestion.getTitle());
-        
-        return questionRepository.save(question);
+        question.setTitle(questionDTO.getTitle());
+        Question updatedQuestion = questionRepository.save(question);
+        return questionMapper.toResponseDTO(updatedQuestion);
     }
 
     public void delete(String id, Authentication authentication) {
@@ -82,7 +81,7 @@ public class QuestionService {
         questionRepository.delete(question);
     }
 
-    public Question addOptions(String questionId, Set<Option> options, Authentication authentication) {
+    public QuestionResponseDTO addOptions(String questionId, Set<Option> options, Authentication authentication) {
         User mentor = userService.getUserFromAuthentication(authentication);
         
         Question question = questionRepository.findById(questionId)
@@ -95,10 +94,11 @@ public class QuestionService {
         }
         
         // Refresh the question to get the updated options
-        return questionRepository.findById(questionId).orElseThrow();
+        Question updatedQuestion = questionRepository.findById(questionId).orElseThrow();
+        return questionMapper.toResponseDTO(updatedQuestion);
     }
 
-    public Question updateOption(String questionId, String optionId, Option updatedOption, Authentication authentication) {
+    public QuestionResponseDTO updateOption(String questionId, String optionId, Option updatedOption, Authentication authentication) {
         User mentor = userService.getUserFromAuthentication(authentication);
         
         Question question = questionRepository.findById(questionId)
@@ -115,10 +115,11 @@ public class QuestionService {
         optionRepository.save(option);
         
         // Refresh the question to get the updated options
-        return questionRepository.findById(questionId).orElseThrow();
+        Question refreshedQuestion = questionRepository.findById(questionId).orElseThrow();
+        return questionMapper.toResponseDTO(refreshedQuestion);
     }
 
-    public Question deleteOption(String questionId, String optionId, Authentication authentication) {
+    public QuestionResponseDTO deleteOption(String questionId, String optionId, Authentication authentication) {
         User mentor = userService.getUserFromAuthentication(authentication);
         
         Question question = questionRepository.findById(questionId)
@@ -132,6 +133,7 @@ public class QuestionService {
         optionRepository.delete(option);
         
         // Refresh the question to get the updated options
-        return questionRepository.findById(questionId).orElseThrow();
+        Question refreshedQuestion = questionRepository.findById(questionId).orElseThrow();
+        return questionMapper.toResponseDTO(refreshedQuestion);
     }
 }

@@ -1,8 +1,7 @@
 package com.temm.skillify.controller.mentor;
 
-
-
-import com.temm.skillify.model.entity.Practice;
+import com.temm.skillify.model.dto.request.PracticeCreateDTO;
+import com.temm.skillify.model.dto.response.PracticeResponseDTO;
 import com.temm.skillify.service.PracticeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,32 +17,31 @@ import java.util.List;
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ROLE_MENTOR')")
 public class PracticeMentorController {
-
     private final PracticeService practiceService;
 
     @GetMapping
-    public ResponseEntity<List<Practice>> getAllPractices(Authentication authentication) {
+    public ResponseEntity<List<PracticeResponseDTO>> getAllPractices(Authentication authentication) {
         return ResponseEntity.ok(practiceService.findAllByMentor(authentication));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Practice> getPracticeById(@PathVariable String id, Authentication authentication) {
+    public ResponseEntity<PracticeResponseDTO> getPracticeById(@PathVariable String id, Authentication authentication) {
         return ResponseEntity.ok(practiceService.findByIdAndMentor(id, authentication));
     }
 
     @GetMapping("/classroom/{classroomId}")
-    public ResponseEntity<List<Practice>> getPracticesByClassroom(@PathVariable String classroomId, Authentication authentication) {
+    public ResponseEntity<List<PracticeResponseDTO>> getPracticesByClassroom(@PathVariable String classroomId, Authentication authentication) {
         return ResponseEntity.ok(practiceService.findByClassroomAndMentor(classroomId, authentication));
     }
 
     @PostMapping
-    public ResponseEntity<Practice> createPractice(@RequestBody Practice practice, Authentication authentication) {
-        return new ResponseEntity<>(practiceService.create(practice, authentication), HttpStatus.CREATED);
+    public ResponseEntity<PracticeResponseDTO> createPractice(@RequestBody PracticeCreateDTO practiceDTO, Authentication authentication) {
+        return new ResponseEntity<>(practiceService.create(practiceDTO, authentication), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Practice> updatePractice(@PathVariable String id, @RequestBody Practice practice, Authentication authentication) {
-        return ResponseEntity.ok(practiceService.update(id, practice, authentication));
+    public ResponseEntity<PracticeResponseDTO> updatePractice(@PathVariable String id, @RequestBody PracticeCreateDTO practiceDTO, Authentication authentication) {
+        return ResponseEntity.ok(practiceService.update(id, practiceDTO, authentication));
     }
 
     @DeleteMapping("/{id}")
@@ -53,7 +51,7 @@ public class PracticeMentorController {
     }
 
     @PostMapping("/{practiceId}/questions/{questionId}")
-    public ResponseEntity<Practice> addQuestionToPractice(
+    public ResponseEntity<PracticeResponseDTO> addQuestionToPractice(
             @PathVariable String practiceId,
             @PathVariable String questionId,
             Authentication authentication) {
@@ -61,7 +59,7 @@ public class PracticeMentorController {
     }
 
     @DeleteMapping("/{practiceId}/questions/{questionId}")
-    public ResponseEntity<Practice> removeQuestionFromPractice(
+    public ResponseEntity<PracticeResponseDTO> removeQuestionFromPractice(
             @PathVariable String practiceId,
             @PathVariable String questionId,
             Authentication authentication) {

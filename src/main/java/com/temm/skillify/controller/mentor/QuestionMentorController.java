@@ -1,8 +1,8 @@
 package com.temm.skillify.controller.mentor;
 
-
+import com.temm.skillify.model.dto.request.QuestionCreateDTO;
+import com.temm.skillify.model.dto.response.QuestionResponseDTO;
 import com.temm.skillify.model.entity.Option;
-import com.temm.skillify.model.entity.Question;
 import com.temm.skillify.service.QuestionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,23 +23,26 @@ public class QuestionMentorController {
     private final QuestionService questionService;
 
     @GetMapping
-    public ResponseEntity<List<Question>> getAllQuestions(Authentication authentication) {
+    public ResponseEntity<List<QuestionResponseDTO>> getAllQuestions(Authentication authentication) {
         return ResponseEntity.ok(questionService.findAllByMentor(authentication));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Question> getQuestionById(@PathVariable String id, Authentication authentication) {
+    public ResponseEntity<QuestionResponseDTO> getQuestionById(@PathVariable String id, Authentication authentication) {
         return ResponseEntity.ok(questionService.findByIdAndMentor(id, authentication));
     }
 
     @PostMapping
-    public ResponseEntity<Question> createQuestion(@RequestBody Question question, Authentication authentication) {
-        return new ResponseEntity<>(questionService.create(question, authentication), HttpStatus.CREATED);
+    public ResponseEntity<QuestionResponseDTO> createQuestion(@RequestBody QuestionCreateDTO questionDTO, Authentication authentication) {
+        return new ResponseEntity<>(questionService.create(questionDTO, authentication), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Question> updateQuestion(@PathVariable String id, @RequestBody Question question, Authentication authentication) {
-        return ResponseEntity.ok(questionService.update(id, question, authentication));
+    public ResponseEntity<QuestionResponseDTO> updateQuestion(
+            @PathVariable String id, 
+            @RequestBody QuestionCreateDTO questionDTO, 
+            Authentication authentication) {
+        return ResponseEntity.ok(questionService.update(id, questionDTO, authentication));
     }
 
     @DeleteMapping("/{id}")
@@ -49,12 +52,15 @@ public class QuestionMentorController {
     }
 
     @PostMapping("/{id}/options")
-    public ResponseEntity<Question> addOptions(@PathVariable String id, @RequestBody Set<Option> options, Authentication authentication) {
+    public ResponseEntity<QuestionResponseDTO> addOptions(
+            @PathVariable String id, 
+            @RequestBody Set<Option> options, 
+            Authentication authentication) {
         return ResponseEntity.ok(questionService.addOptions(id, options, authentication));
     }
 
     @PutMapping("/{questionId}/options/{optionId}")
-    public ResponseEntity<Question> updateOption(
+    public ResponseEntity<QuestionResponseDTO> updateOption(
             @PathVariable String questionId,
             @PathVariable String optionId,
             @RequestBody Option option,
@@ -63,7 +69,7 @@ public class QuestionMentorController {
     }
 
     @DeleteMapping("/{questionId}/options/{optionId}")
-    public ResponseEntity<Question> deleteOption(
+    public ResponseEntity<QuestionResponseDTO> deleteOption(
             @PathVariable String questionId,
             @PathVariable String optionId,
             Authentication authentication) {

@@ -1,8 +1,7 @@
 package com.temm.skillify.controller.mentor;
 
-
-
-import com.temm.skillify.model.entity.TutorSession;
+import com.temm.skillify.model.dto.request.TutorSessionCreateDTO;
+import com.temm.skillify.model.dto.response.TutorSessionResponseDTO;
 import com.temm.skillify.service.TutorSessionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -24,40 +23,40 @@ public class TutorSessionMentorController {
     private final TutorSessionService tutorSessionService;
 
     @GetMapping
-    public ResponseEntity<List<TutorSession>> getAllSessions(Authentication authentication) {
+    public ResponseEntity<List<TutorSessionResponseDTO>> getAllSessions(Authentication authentication) {
         return ResponseEntity.ok(tutorSessionService.findAllByMentor(authentication));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TutorSession> getSessionById(@PathVariable String id, Authentication authentication) {
+    public ResponseEntity<TutorSessionResponseDTO> getSessionById(@PathVariable String id, Authentication authentication) {
         return ResponseEntity.ok(tutorSessionService.findByIdAndMentor(id, authentication));
     }
 
     @GetMapping("/date/{date}")
-    public ResponseEntity<List<TutorSession>> getSessionsByDate(
+    public ResponseEntity<List<TutorSessionResponseDTO>> getSessionsByDate(
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             Authentication authentication) {
         return ResponseEntity.ok(tutorSessionService.findByMentorAndDate(date, authentication));
     }
 
     @GetMapping("/student/{studentId}")
-    public ResponseEntity<List<TutorSession>> getSessionsByStudent(
+    public ResponseEntity<List<TutorSessionResponseDTO>> getSessionsByStudent(
             @PathVariable String studentId,
             Authentication authentication) {
         return ResponseEntity.ok(tutorSessionService.findByMentorAndStudent(studentId, authentication));
     }
 
     @PostMapping
-    public ResponseEntity<TutorSession> createSession(@RequestBody TutorSession session, Authentication authentication) {
-        return new ResponseEntity<>(tutorSessionService.create(session, authentication), HttpStatus.CREATED);
+    public ResponseEntity<TutorSessionResponseDTO> createSession(@RequestBody TutorSessionCreateDTO dto, Authentication authentication) {
+        return new ResponseEntity<>(tutorSessionService.create(dto, authentication), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TutorSession> updateSession(
+    public ResponseEntity<TutorSessionResponseDTO> updateSession(
             @PathVariable String id,
-            @RequestBody TutorSession session,
+            @RequestBody TutorSessionCreateDTO dto,
             Authentication authentication) {
-        return ResponseEntity.ok(tutorSessionService.update(id, session, authentication));
+        return ResponseEntity.ok(tutorSessionService.update(id, dto, authentication));
     }
 
     @DeleteMapping("/{id}")
