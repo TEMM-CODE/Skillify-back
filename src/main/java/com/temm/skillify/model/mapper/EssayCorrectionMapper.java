@@ -10,6 +10,7 @@ import com.temm.skillify.model.entity.Essay;
 import com.temm.skillify.model.entity.EssayCorrection;
 import com.temm.skillify.model.entity.EssayExecution;
 import com.temm.skillify.model.entity.User;
+import com.temm.skillify.repository.EssayExecutionRepository;
 import com.temm.skillify.repository.EssayRepository;
 import com.temm.skillify.service.EssayExecutionService;
 import com.temm.skillify.service.EssayService;
@@ -24,7 +25,7 @@ public class EssayCorrectionMapper {
     
     private final EssayRepository essayRepository;
     private final UserService userService;
-    private final EssayExecutionService essayExecutionService;
+    private final EssayExecutionRepository essayExecutionService;
     private final EssayMapper essayMapper;
     private final UserMapper userMapper;
     private final EssayExecutionMapper essayExecutionMapper;

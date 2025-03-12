@@ -1,7 +1,7 @@
 package com.temm.skillify.controller.student;
 
-
-import com.temm.skillify.model.entity.EssayExecution;
+import com.temm.skillify.model.dto.request.EssayExecutionCreateDTO;
+import com.temm.skillify.model.dto.response.EssayExecutionResponseDTO;
 import com.temm.skillify.service.EssayExecutionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,33 +16,29 @@ import java.util.List;
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ROLE_ESTUDANTE')")
 public class EssayExecutionStudentController {
-
     private final EssayExecutionService essayExecutionService;
 
     @GetMapping
-    public ResponseEntity<List<EssayExecution>> getAllMyEssayExecutions(Authentication authentication) {
-        return ResponseEntity.ok(essayExecutionService.findAllByStudentEmail(authentication.getName()));
+    public ResponseEntity<List<EssayExecutionResponseDTO>> getAllMyEssayExecutions(Authentication authentication) {
+        return ResponseEntity.ok(essayExecutionService.findAllDTOsByStudentEmail(authentication.getName()));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<EssayExecution> getEssayExecutionById(@PathVariable String id, Authentication authentication) {
-        return essayExecutionService.findByIdAndStudentEmail(id, authentication.getName())
+    public ResponseEntity<EssayExecutionResponseDTO> getEssayExecutionById(@PathVariable String id, Authentication authentication) {
+        return essayExecutionService.findDTOByIdAndStudentEmail(id, authentication.getName())
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public ResponseEntity<EssayExecution> createEssayExecution(@RequestBody EssayExecution essayExecution, Authentication authentication) {
-        return ResponseEntity.ok(essayExecutionService.saveForStudent(essayExecution, authentication.getName()));
+    public ResponseEntity<EssayExecutionResponseDTO> createEssayExecution(@RequestBody EssayExecutionCreateDTO createDTO, Authentication authentication) {
+        return ResponseEntity.ok(essayExecutionService.saveForStudent(createDTO, authentication.getName()));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<EssayExecution> updateEssayExecution(@PathVariable String id, @RequestBody EssayExecution essayExecution, Authentication authentication) {
-        return essayExecutionService.findByIdAndStudentEmail(id, authentication.getName())
-                .map(existingEssayExecution -> {
-                    essayExecution.setId(id);
-                    return ResponseEntity.ok(essayExecutionService.save(essayExecution));
-                })
+    public ResponseEntity<EssayExecutionResponseDTO> updateEssayExecution(@PathVariable String id, @RequestBody EssayExecutionCreateDTO updateDTO, Authentication authentication) {
+        return essayExecutionService.findDTOByIdAndStudentEmail(id, authentication.getName())
+                .map(existingDTO -> ResponseEntity.ok(essayExecutionService.update(id, updateDTO)))
                 .orElse(ResponseEntity.notFound().build());
     }
 }
