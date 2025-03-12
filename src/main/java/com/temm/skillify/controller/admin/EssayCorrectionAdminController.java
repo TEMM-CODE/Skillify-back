@@ -7,7 +7,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import com.temm.skillify.model.entity.EssayCorrection;
+import com.temm.skillify.model.dto.request.EssayCorrectionCreateDTO;
+import com.temm.skillify.model.dto.response.EssayCorrectionResponseDTO;
 import com.temm.skillify.model.entity.User;
 import com.temm.skillify.service.EssayCorrectionAdminService;
 import com.temm.skillify.service.UserService;
@@ -24,19 +25,19 @@ public class EssayCorrectionAdminController {
     private final UserService userService;
     
     @GetMapping
-    public ResponseEntity<List<EssayCorrection>> getAllCorrections() {
+    public ResponseEntity<List<EssayCorrectionResponseDTO>> getAllCorrections() {
         return ResponseEntity.ok(essayCorrectionService.findAll());
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<EssayCorrection> getCorrectionById(@PathVariable String id) {
+    public ResponseEntity<EssayCorrectionResponseDTO> getCorrectionById(@PathVariable String id) {
         return essayCorrectionService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
     
     @GetMapping("/mentor/{mentorId}")
-    public ResponseEntity<List<EssayCorrection>> getCorrectionsByMentor(@PathVariable String mentorId) {
+    public ResponseEntity<List<EssayCorrectionResponseDTO>> getCorrectionsByMentor(@PathVariable String mentorId) {
         User mentor = userService.findById(mentorId)
                 .orElseThrow(() -> new RuntimeException("Mentor not found"));
         
@@ -44,41 +45,25 @@ public class EssayCorrectionAdminController {
     }
     
     @PostMapping
-    public ResponseEntity<EssayCorrection> createCorrection(
-            @RequestBody EssayCorrection essayCorrection,
+    public ResponseEntity<EssayCorrectionResponseDTO> createCorrection(
+            @RequestBody EssayCorrectionCreateDTO essayCorrectionDTO,
             Authentication authentication) {
         
         userService.getUserFromAuthentication(authentication); // Verify admin is authenticated
-        EssayCorrection savedCorrection = essayCorrectionService.save(essayCorrection);
+        EssayCorrectionResponseDTO savedCorrection = essayCorrectionService.save(essayCorrectionDTO);
         return new ResponseEntity<>(savedCorrection, HttpStatus.CREATED);
     }
     
     @PutMapping("/{id}")
-    public ResponseEntity<EssayCorrection> updateCorrection(
+    public ResponseEntity<EssayCorrectionResponseDTO> updateCorrection(
             @PathVariable String id,
-            @RequestBody EssayCorrection essayCorrection,
+            @RequestBody EssayCorrectionCreateDTO essayCorrectionDTO,
             Authentication authentication) {
         
         userService.getUserFromAuthentication(authentication); // Verify admin is authenticated
         
-        return essayCorrectionService.findById(id)
-                .map(existingCorrection -> {
-                    // Update all fields
-                    existingCorrection.setEssay(essayCorrection.getEssay());
-                    existingCorrection.setMentor(essayCorrection.getMentor());
-                    existingCorrection.setEssayExecution(essayCorrection.getEssayExecution());
-                    existingCorrection.setEstruturaCoesaoComentario(essayCorrection.getEstruturaCoesaoComentario());
-                    existingCorrection.setArgumentacaoComentario(essayCorrection.getArgumentacaoComentario());
-                    existingCorrection.setConquistas(essayCorrection.getConquistas());
-                    existingCorrection.setCompetencia1Score(essayCorrection.getCompetencia1Score());
-                    existingCorrection.setCompetencia2Score(essayCorrection.getCompetencia2Score());
-                    existingCorrection.setCompetencia3Score(essayCorrection.getCompetencia3Score());
-                    existingCorrection.setCompetencia4Score(essayCorrection.getCompetencia4Score());
-                    existingCorrection.setCompetencia5Score(essayCorrection.getCompetencia5Score());
-                    
-                    EssayCorrection updatedCorrection = essayCorrectionService.save(existingCorrection);
-                    return ResponseEntity.ok(updatedCorrection);
-                })
+        return essayCorrectionService.update(id, essayCorrectionDTO)
+                .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
     

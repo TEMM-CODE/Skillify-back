@@ -1,95 +1,139 @@
 package com.temm.skillify.service;
 
-
+import com.temm.skillify.model.dto.request.ClassroomCreateDTO;
+import com.temm.skillify.model.dto.response.ClassroomResponseDTO;
 import com.temm.skillify.model.entity.Classroom;
 import com.temm.skillify.model.entity.ClassroomAccessToken;
 import com.temm.skillify.model.entity.User;
+import com.temm.skillify.model.mapper.ClassroomMapper;
 import com.temm.skillify.repository.ClassroomAccessTokenRepository;
 import com.temm.skillify.repository.ClassroomRepository;
+import com.temm.skillify.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ClassroomAdminService {
-    
     private final ClassroomRepository classroomRepository;
     private final ClassroomAccessTokenRepository tokenRepository;
-    
-    public List<Classroom> findAllClassrooms() {
-        return classroomRepository.findAll();
+    private final UserRepository userRepository;
+    private final ClassroomMapper classroomMapper;
+
+    public List<ClassroomResponseDTO> findAllClassrooms() {
+        return classroomRepository.findAll().stream()
+                .map(classroomMapper::toResponseDTO)
+                .collect(Collectors.toList());
     }
-    
-    public Optional<Classroom> findClassroomById(String id) {
-        return classroomRepository.findById(id);
+
+    public Optional<ClassroomResponseDTO> findClassroomById(String id) {
+        return classroomRepository.findById(id)
+                .map(classroomMapper::toResponseDTO);
     }
-    
-    public Classroom createClassroom(Classroom classroom) {
-        return classroomRepository.save(classroom);
+
+    public ClassroomResponseDTO createClassroom(ClassroomCreateDTO classroomDTO) {
+        Classroom classroom = new Classroom();
+        classroom.setName(classroomDTO.getName());
+        
+        // Set mentor if provided
+        if (classroomDTO.getMentorId() != null && !classroomDTO.getMentorId().isEmpty()) {
+            User mentor = userRepository.findById(classroomDTO.getMentorId())
+                    .orElseThrow(() -> new EntityNotFoundException("Mentor not found with id: " + classroomDTO.getMentorId()));
+            classroom.setMentor(mentor);
+        }
+        
+        // Set students if provided
+        if (classroomDTO.getStudentIds() != null && !classroomDTO.getStudentIds().isEmpty()) {
+            Set<User> students = classroomDTO.getStudentIds().stream()
+                    .map(id -> userRepository.findById(id)
+                            .orElseThrow(() -> new EntityNotFoundException("Student not found with id: " + id)))
+                    .collect(Collectors.toSet());
+            classroom.setStudents(students);
+        } else {
+            classroom.setStudents(new HashSet<>());
+        }
+        
+        Classroom savedClassroom = classroomRepository.save(classroom);
+        return classroomMapper.toResponseDTO(savedClassroom);
     }
-    
-    public Classroom updateClassroom(String id, Classroom updatedClassroom) {
+
+    public ClassroomResponseDTO updateClassroom(String id, ClassroomCreateDTO classroomDTO) {
         Classroom existingClassroom = classroomRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Classroom not found with id: " + id));
         
-        existingClassroom.setName(updatedClassroom.getName());
+        // Update name if provided
+        existingClassroom.setName(classroomDTO.getName());
         
-        if (updatedClassroom.getMentor() != null) {
-            existingClassroom.setMentor(updatedClassroom.getMentor());
+        // Update mentor if provided
+        if (classroomDTO.getMentorId() != null) {
+            User mentor = userRepository.findById(classroomDTO.getMentorId())
+                    .orElseThrow(() -> new EntityNotFoundException("Mentor not found with id: " + classroomDTO.getMentorId()));
+            existingClassroom.setMentor(mentor);
         }
         
-        if (updatedClassroom.getStudents() != null) {
-            existingClassroom.setStudents(updatedClassroom.getStudents());
+        // Update students if provided
+        if (classroomDTO.getStudentIds() != null) {
+            Set<User> students = classroomDTO.getStudentIds().stream()
+                    .map(studentId -> userRepository.findById(studentId)
+                            .orElseThrow(() -> new EntityNotFoundException("Student not found with id: " + studentId)))
+                    .collect(Collectors.toSet());
+            existingClassroom.setStudents(students);
         }
         
-        return classroomRepository.save(existingClassroom);
+        Classroom updatedClassroom = classroomRepository.save(existingClassroom);
+        return classroomMapper.toResponseDTO(updatedClassroom);
     }
-    
+
     public void deleteClassroom(String id) {
         classroomRepository.deleteById(id);
     }
-    
+
     public List<ClassroomAccessToken> findTokensByClassroomId(String classroomId) {
         Classroom classroom = classroomRepository.findById(classroomId)
                 .orElseThrow(() -> new EntityNotFoundException("Classroom not found with id: " + classroomId));
-        
         return tokenRepository.findByClassroom(classroom);
     }
-    
+
     public ClassroomAccessToken createAccessToken(String classroomId) {
         Classroom classroom = classroomRepository.findById(classroomId)
                 .orElseThrow(() -> new EntityNotFoundException("Classroom not found with id: " + classroomId));
-        
         ClassroomAccessToken token = new ClassroomAccessToken();
         token.setClassroom(classroom);
         token.setToken(UUID.randomUUID().toString());
-        
         return tokenRepository.save(token);
     }
-    
+
     public void deleteAccessToken(String tokenId) {
         tokenRepository.deleteById(tokenId);
     }
-    
-    public Classroom updateClassroomMentor(String classroomId, User mentor) {
+
+    public ClassroomResponseDTO updateClassroomMentor(String classroomId, String mentorId) {
         Classroom classroom = classroomRepository.findById(classroomId)
                 .orElseThrow(() -> new EntityNotFoundException("Classroom not found with id: " + classroomId));
+        
+        User mentor = userRepository.findById(mentorId)
+                .orElseThrow(() -> new EntityNotFoundException("Mentor not found with id: " + mentorId));
         
         classroom.setMentor(mentor);
-        return classroomRepository.save(classroom);
+        Classroom updatedClassroom = classroomRepository.save(classroom);
+        return classroomMapper.toResponseDTO(updatedClassroom);
     }
-    
-    public Classroom updateClassroomStudents(String classroomId, Set<User> students) {
+
+    public ClassroomResponseDTO updateClassroomStudents(String classroomId, Set<String> studentIds) {
         Classroom classroom = classroomRepository.findById(classroomId)
                 .orElseThrow(() -> new EntityNotFoundException("Classroom not found with id: " + classroomId));
         
+        Set<User> students = studentIds.stream()
+                .map(id -> userRepository.findById(id)
+                        .orElseThrow(() -> new EntityNotFoundException("Student not found with id: " + id)))
+                .collect(Collectors.toSet());
+        
         classroom.setStudents(students);
-        return classroomRepository.save(classroom);
+        Classroom updatedClassroom = classroomRepository.save(classroom);
+        return classroomMapper.toResponseDTO(updatedClassroom);
     }
 }

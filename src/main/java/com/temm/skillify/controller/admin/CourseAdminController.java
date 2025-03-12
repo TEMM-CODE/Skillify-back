@@ -1,6 +1,8 @@
 package com.temm.skillify.controller.admin;
 
-import com.temm.skillify.model.entity.Course;
+import com.temm.skillify.model.dto.request.CourseCreateDTO;
+import com.temm.skillify.model.dto.response.CourseCategoryResponseDTO;
+import com.temm.skillify.model.dto.response.CourseResponseDTO;
 import com.temm.skillify.model.entity.CourseCategory;
 import com.temm.skillify.service.CourseAdminService;
 import lombok.RequiredArgsConstructor;
@@ -16,57 +18,56 @@ import java.util.Set;
 @PreAuthorize("hasRole('ROLE_ADMIN')")
 @RequiredArgsConstructor
 public class CourseAdminController {
-    
     private final CourseAdminService courseAdminService;
-    
+
     @GetMapping
-    public ResponseEntity<List<Course>> getAllCourses() {
+    public ResponseEntity<List<CourseResponseDTO>> getAllCourses() {
         return ResponseEntity.ok(courseAdminService.findAllCourses());
     }
-    
+
     @GetMapping("/{id}")
-    public ResponseEntity<Course> getCourseById(@PathVariable String id) {
+    public ResponseEntity<CourseResponseDTO> getCourseById(@PathVariable String id) {
         return courseAdminService.findCourseById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
-    
+
     @PostMapping
-    public ResponseEntity<Course> createCourse(@RequestBody Course course) {
-        return ResponseEntity.ok(courseAdminService.createCourse(course));
+    public ResponseEntity<CourseResponseDTO> createCourse(@RequestBody CourseCreateDTO courseDTO) {
+        return ResponseEntity.ok(courseAdminService.createCourse(courseDTO));
     }
-    
+
     @PutMapping("/{id}")
-    public ResponseEntity<Course> updateCourse(@PathVariable String id, @RequestBody Course course) {
-        return ResponseEntity.ok(courseAdminService.updateCourse(id, course));
+    public ResponseEntity<CourseResponseDTO> updateCourse(@PathVariable String id, @RequestBody CourseCreateDTO courseDTO) {
+        return ResponseEntity.ok(courseAdminService.updateCourse(id, courseDTO));
     }
-    
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCourse(@PathVariable String id) {
         courseAdminService.deleteCourse(id);
         return ResponseEntity.noContent().build();
     }
-    
+
     @GetMapping("/categories")
-    public ResponseEntity<List<CourseCategory>> getAllCategories() {
+    public ResponseEntity<List<CourseCategoryResponseDTO>> getAllCategories() {
         return ResponseEntity.ok(courseAdminService.findAllCategories());
     }
-    
+
     @PostMapping("/categories")
-    public ResponseEntity<CourseCategory> createCategory(@RequestBody CourseCategory category) {
+    public ResponseEntity<CourseCategoryResponseDTO> createCategory(@RequestBody CourseCategory category) {
         return ResponseEntity.ok(courseAdminService.createCategory(category));
     }
-    
+
     @DeleteMapping("/categories/{id}")
     public ResponseEntity<Void> deleteCategory(@PathVariable String id) {
         courseAdminService.deleteCategory(id);
         return ResponseEntity.noContent().build();
     }
-    
+
     @PutMapping("/{courseId}/categories")
-    public ResponseEntity<Course> updateCourseCategories(
-            @PathVariable String courseId, 
-            @RequestBody Set<CourseCategory> categories) {
-        return ResponseEntity.ok(courseAdminService.updateCourseCategories(courseId, categories));
+    public ResponseEntity<CourseResponseDTO> updateCourseCategories(
+            @PathVariable String courseId,
+            @RequestBody Set<String> categoryIds) {
+        return ResponseEntity.ok(courseAdminService.updateCourseCategories(courseId, categoryIds));
     }
 }

@@ -1,76 +1,73 @@
 package com.temm.skillify.service;
 
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
+import com.temm.skillify.model.dto.request.EssayCreateDTO;
+import com.temm.skillify.model.dto.response.EssayResponseDTO;
 import com.temm.skillify.model.entity.Essay;
 import com.temm.skillify.model.entity.Classroom;
+import com.temm.skillify.model.mapper.EssayMapper;
 import com.temm.skillify.repository.EssayRepository;
 import com.temm.skillify.repository.ClassroomRepository;
-
 import jakarta.persistence.EntityNotFoundException;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class EssayAdminService {
-    
     private final EssayRepository essayRepository;
     private final ClassroomRepository classroomRepository;
-    
-    public List<Essay> findAll() {
-        return essayRepository.findAll();
+    private final EssayMapper essayMapper;
+
+    public List<EssayResponseDTO> findAll() {
+        return essayRepository.findAll().stream()
+                .map(essayMapper::toResponseDTO)
+                .collect(Collectors.toList());
     }
-    
-    public Optional<Essay> findById(String id) {
-        return essayRepository.findById(id);
+
+    public Optional<EssayResponseDTO> findById(String id) {
+        return essayRepository.findById(id)
+                .map(essayMapper::toResponseDTO);
     }
-    
-    public List<Essay> findByClassroom(String classroomId) {
+
+    public List<EssayResponseDTO> findByClassroom(String classroomId) {
         Classroom classroom = classroomRepository.findById(classroomId)
                 .orElseThrow(() -> new EntityNotFoundException("Classroom not found"));
-        return essayRepository.findByClassroom(classroom);
+        return essayRepository.findByClassroom(classroom).stream()
+                .map(essayMapper::toResponseDTO)
+                .collect(Collectors.toList());
     }
-    
-    public Essay create(Essay essay, String classroomId) {
-        Classroom classroom = classroomRepository.findById(classroomId)
+
+    public EssayResponseDTO create(EssayCreateDTO essayCreateDTO) {
+        Classroom classroom = classroomRepository.findById(essayCreateDTO.getClassroomId())
                 .orElseThrow(() -> new EntityNotFoundException("Classroom not found"));
-        essay.setClassroom(classroom);
-        return essayRepository.save(essay);
+                
+        Essay essay = essayMapper.toEntity(essayCreateDTO, classroom);
+        Essay savedEssay = essayRepository.save(essay);
+        return essayMapper.toResponseDTO(savedEssay);
     }
-    
-    public Essay update(String id, Essay updatedEssay, String classroomId) {
+
+    public EssayResponseDTO update(String id, EssayCreateDTO essayCreateDTO) {
         Essay existingEssay = essayRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Essay not found"));
-        
-        if (classroomId != null) {
-            Classroom classroom = classroomRepository.findById(classroomId)
+
+        // Update classroom if classroomId is provided
+        if (essayCreateDTO.getClassroomId() != null) {
+            Classroom classroom = classroomRepository.findById(essayCreateDTO.getClassroomId())
                     .orElseThrow(() -> new EntityNotFoundException("Classroom not found"));
             existingEssay.setClassroom(classroom);
         }
+
+        // Update essay properties
+        essayMapper.updateEntityFromDTO(existingEssay, essayCreateDTO);
         
-        if (updatedEssay.getTheme() != null) {
-            existingEssay.setTheme(updatedEssay.getTheme());
-        }
-        
-        if (updatedEssay.getDescription() != null) {
-            existingEssay.setDescription(updatedEssay.getDescription());
-        }
-        
-        if (updatedEssay.getMinWords() != null) {
-            existingEssay.setMinWords(updatedEssay.getMinWords());
-        }
-        
-        if (updatedEssay.getMaxDate() != null) {
-            existingEssay.setMaxDate(updatedEssay.getMaxDate());
-        }
-        
-        return essayRepository.save(existingEssay);
+        Essay updatedEssay = essayRepository.save(existingEssay);
+        return essayMapper.toResponseDTO(updatedEssay);
     }
-    
+
     public void deleteById(String id) {
         essayRepository.deleteById(id);
     }

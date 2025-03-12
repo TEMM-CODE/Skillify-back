@@ -1,99 +1,68 @@
 package com.temm.skillify.controller.admin;
 
-
-import com.temm.skillify.model.entity.Option;
-import com.temm.skillify.model.entity.Practice;
-import com.temm.skillify.model.entity.Question;
-import com.temm.skillify.service.PracticeAdminService;
+import com.temm.skillify.model.dto.request.PracticeCreateDTO;
+import com.temm.skillify.model.dto.response.PracticeResponseDTO;
+import com.temm.skillify.service.PracticeService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/api/admin/practices")
-@PreAuthorize("hasRole('ROLE_ADMIN')")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ROLE_ADMIN')")
 public class PracticeAdminController {
-    
-    private final PracticeAdminService practiceAdminService;
-    
+    private final PracticeService practiceService;
+
     @GetMapping
-    public ResponseEntity<List<Practice>> getAllPractices() {
-        return ResponseEntity.ok(practiceAdminService.findAllPractices());
+    public ResponseEntity<List<PracticeResponseDTO>> getAllPractices(Authentication authentication) {
+        return ResponseEntity.ok(practiceService.findAllByMentor(authentication));
     }
-    
+
     @GetMapping("/{id}")
-    public ResponseEntity<Practice> getPracticeById(@PathVariable String id) {
-        return practiceAdminService.findPracticeById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<PracticeResponseDTO> getPracticeById(@PathVariable String id, Authentication authentication) {
+        return ResponseEntity.ok(practiceService.findByIdAndMentor(id, authentication));
     }
-    
+
+    @GetMapping("/classroom/{classroomId}")
+    public ResponseEntity<List<PracticeResponseDTO>> getPracticesByClassroom(@PathVariable String classroomId, Authentication authentication) {
+        return ResponseEntity.ok(practiceService.findByClassroomAndMentor(classroomId, authentication));
+    }
+
     @PostMapping
-    public ResponseEntity<Practice> createPractice(@RequestBody Practice practice) {
-        return ResponseEntity.ok(practiceAdminService.createPractice(practice));
+    public ResponseEntity<PracticeResponseDTO> createPractice(@RequestBody PracticeCreateDTO practiceDTO, Authentication authentication) {
+        return new ResponseEntity<>(practiceService.create(practiceDTO, authentication), HttpStatus.CREATED);
     }
-    
+
     @PutMapping("/{id}")
-    public ResponseEntity<Practice> updatePractice(@PathVariable String id, @RequestBody Practice practice) {
-        return ResponseEntity.ok(practiceAdminService.updatePractice(id, practice));
+    public ResponseEntity<PracticeResponseDTO> updatePractice(@PathVariable String id, @RequestBody PracticeCreateDTO practiceDTO, Authentication authentication) {
+        return ResponseEntity.ok(practiceService.update(id, practiceDTO, authentication));
     }
-    
+
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePractice(@PathVariable String id) {
-        practiceAdminService.deletePractice(id);
+    public ResponseEntity<Void> deletePractice(@PathVariable String id, Authentication authentication) {
+        practiceService.delete(id, authentication);
         return ResponseEntity.noContent().build();
     }
-    
-    @GetMapping("/questions")
-    public ResponseEntity<List<Question>> getAllQuestions() {
-        return ResponseEntity.ok(practiceAdminService.findAllQuestions());
-    }
-    
-    @GetMapping("/questions/{id}")
-    public ResponseEntity<Question> getQuestionById(@PathVariable String id) {
-        return practiceAdminService.findQuestionById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-    
-    @PostMapping("/questions")
-    public ResponseEntity<Question> createQuestion(@RequestBody Question question) {
-        return ResponseEntity.ok(practiceAdminService.createQuestion(question));
-    }
-    
-    @PutMapping("/questions/{id}")
-    public ResponseEntity<Question> updateQuestion(@PathVariable String id, @RequestBody Question question) {
-        return ResponseEntity.ok(practiceAdminService.updateQuestion(id, question));
-    }
-    
-    @DeleteMapping("/questions/{id}")
-    public ResponseEntity<Void> deleteQuestion(@PathVariable String id) {
-        practiceAdminService.deleteQuestion(id);
-        return ResponseEntity.noContent().build();
-    }
-    
-    @PostMapping("/questions/{questionId}/options")
-    public ResponseEntity<Option> addOptionToQuestion(
-            @PathVariable String questionId,
-            @RequestBody Option option) {
-        return ResponseEntity.ok(practiceAdminService.addOptionToQuestion(questionId, option));
-    }
-    
-    @DeleteMapping("/options/{optionId}")
-    public ResponseEntity<Void> deleteOption(@PathVariable String optionId) {
-        practiceAdminService.deleteOption(optionId);
-        return ResponseEntity.noContent().build();
-    }
-    
-    @PutMapping("/{practiceId}/questions")
-    public ResponseEntity<Practice> updatePracticeQuestions(
+
+    @PostMapping("/{practiceId}/questions/{questionId}")
+    public ResponseEntity<PracticeResponseDTO> addQuestionToPractice(
             @PathVariable String practiceId,
-            @RequestBody Set<Question> questions) {
-        return ResponseEntity.ok(practiceAdminService.updatePracticeQuestions(practiceId, questions));
+            @PathVariable String questionId,
+            Authentication authentication) {
+        return ResponseEntity.ok(practiceService.addQuestion(practiceId, questionId, authentication));
+    }
+
+    @DeleteMapping("/{practiceId}/questions/{questionId}")
+    public ResponseEntity<PracticeResponseDTO> removeQuestionFromPractice(
+            @PathVariable String practiceId,
+            @PathVariable String questionId,
+            Authentication authentication) {
+        return ResponseEntity.ok(practiceService.removeQuestion(practiceId, questionId, authentication));
     }
 }

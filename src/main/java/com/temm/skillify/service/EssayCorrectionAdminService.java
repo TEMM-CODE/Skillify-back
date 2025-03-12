@@ -3,10 +3,13 @@ package com.temm.skillify.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import com.temm.skillify.model.dto.request.EssayCorrectionCreateDTO;
+import com.temm.skillify.model.dto.response.EssayCorrectionResponseDTO;
 import com.temm.skillify.model.entity.Essay;
 import com.temm.skillify.model.entity.EssayCorrection;
 import com.temm.skillify.model.entity.EssayExecution;
 import com.temm.skillify.model.entity.User;
+import com.temm.skillify.model.mapper.EssayCorrectionMapper;
 import com.temm.skillify.repository.EssayCorrectionRepository;
 
 import java.util.List;
@@ -15,33 +18,49 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class EssayCorrectionAdminService {
-    
     private final EssayCorrectionRepository essayCorrectionRepository;
-    
-    public List<EssayCorrection> findAll() {
-        return essayCorrectionRepository.findAll();
+    private final EssayCorrectionMapper essayCorrectionMapper;
+
+    public List<EssayCorrectionResponseDTO> findAll() {
+        List<EssayCorrection> corrections = essayCorrectionRepository.findAll();
+        return essayCorrectionMapper.toResponseDTOList(corrections);
     }
-    
-    public Optional<EssayCorrection> findById(String id) {
-        return essayCorrectionRepository.findById(id);
+
+    public Optional<EssayCorrectionResponseDTO> findById(String id) {
+        return essayCorrectionRepository.findById(id)
+                .map(essayCorrectionMapper::toResponseDTO);
     }
-    
-    public List<EssayCorrection> findByMentor(User mentor) {
-        return essayCorrectionRepository.findByMentor(mentor);
+
+    public List<EssayCorrectionResponseDTO> findByMentor(User mentor) {
+        List<EssayCorrection> corrections = essayCorrectionRepository.findByMentor(mentor);
+        return essayCorrectionMapper.toResponseDTOList(corrections);
     }
-    
-    public List<EssayCorrection> findByEssay(Essay essay) {
-        return essayCorrectionRepository.findByEssay(essay);
+
+    public List<EssayCorrectionResponseDTO> findByEssay(Essay essay) {
+        List<EssayCorrection> corrections = essayCorrectionRepository.findByEssay(essay);
+        return essayCorrectionMapper.toResponseDTOList(corrections);
     }
-    
-    public Optional<EssayCorrection> findByEssayExecution(EssayExecution execution) {
-        return essayCorrectionRepository.findByEssayExecution(execution);
+
+    public Optional<EssayCorrectionResponseDTO> findByEssayExecution(EssayExecution execution) {
+        return essayCorrectionRepository.findByEssayExecution(execution)
+                .map(essayCorrectionMapper::toResponseDTO);
     }
-    
-    public EssayCorrection save(EssayCorrection essayCorrection) {
-        return essayCorrectionRepository.save(essayCorrection);
+
+    public EssayCorrectionResponseDTO save(EssayCorrectionCreateDTO correctionDTO) {
+        EssayCorrection entity = essayCorrectionMapper.toEntity(correctionDTO);
+        EssayCorrection savedEntity = essayCorrectionRepository.save(entity);
+        return essayCorrectionMapper.toResponseDTO(savedEntity);
     }
-    
+
+    public Optional<EssayCorrectionResponseDTO> update(String id, EssayCorrectionCreateDTO updateDTO) {
+        return essayCorrectionRepository.findById(id)
+                .map(existingCorrection -> {
+                    essayCorrectionMapper.updateEntityFromDTO(existingCorrection, updateDTO);
+                    EssayCorrection updatedEntity = essayCorrectionRepository.save(existingCorrection);
+                    return essayCorrectionMapper.toResponseDTO(updatedEntity);
+                });
+    }
+
     public void deleteById(String id) {
         essayCorrectionRepository.deleteById(id);
     }

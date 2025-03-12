@@ -6,7 +6,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import com.temm.skillify.model.entity.CourseLesson;
+import com.temm.skillify.model.dto.request.CourseLessonCreateDTO;
+import com.temm.skillify.model.dto.response.CourseLessonResponseDTO;
 import com.temm.skillify.service.CourseLessonAdminService;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -18,23 +19,23 @@ import java.util.List;
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ROLE_ADMIN')")
 public class CourseLessonAdminController {
-    
+
     private final CourseLessonAdminService courseLessonAdminService;
     
     @GetMapping
-    public ResponseEntity<List<CourseLesson>> getAllLessons() {
+    public ResponseEntity<List<CourseLessonResponseDTO>> getAllLessons() {
         return ResponseEntity.ok(courseLessonAdminService.findAll());
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<CourseLesson> getLessonById(@PathVariable String id) {
+    public ResponseEntity<CourseLessonResponseDTO> getLessonById(@PathVariable String id) {
         return courseLessonAdminService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
     
     @GetMapping("/course/{courseId}")
-    public ResponseEntity<List<CourseLesson>> getLessonsByCourse(@PathVariable String courseId) {
+    public ResponseEntity<List<CourseLessonResponseDTO>> getLessonsByCourse(@PathVariable String courseId) {
         try {
             return ResponseEntity.ok(courseLessonAdminService.findByCourse(courseId));
         } catch (EntityNotFoundException e) {
@@ -43,7 +44,7 @@ public class CourseLessonAdminController {
     }
     
     @GetMapping("/category/{categoryId}")
-    public ResponseEntity<List<CourseLesson>> getLessonsByCategory(@PathVariable String categoryId) {
+    public ResponseEntity<List<CourseLessonResponseDTO>> getLessonsByCategory(@PathVariable String categoryId) {
         try {
             return ResponseEntity.ok(courseLessonAdminService.findByCategory(categoryId));
         } catch (EntityNotFoundException e) {
@@ -52,13 +53,9 @@ public class CourseLessonAdminController {
     }
     
     @PostMapping
-    public ResponseEntity<CourseLesson> createLesson(
-            @RequestBody CourseLesson courseLesson,
-            @RequestParam String courseId,
-            @RequestParam(required = false) String categoryId,
-            @RequestParam(required = false) String classroomId) {
+    public ResponseEntity<CourseLessonResponseDTO> createLesson(@RequestBody CourseLessonCreateDTO createDTO) {
         try {
-            CourseLesson created = courseLessonAdminService.create(courseLesson, courseId, categoryId, classroomId);
+            CourseLessonResponseDTO created = courseLessonAdminService.create(createDTO);
             return new ResponseEntity<>(created, HttpStatus.CREATED);
         } catch (EntityNotFoundException e) {
             return ResponseEntity.notFound().build();
@@ -66,14 +63,11 @@ public class CourseLessonAdminController {
     }
     
     @PutMapping("/{id}")
-    public ResponseEntity<CourseLesson> updateLesson(
+    public ResponseEntity<CourseLessonResponseDTO> updateLesson(
             @PathVariable String id,
-            @RequestBody CourseLesson courseLesson,
-            @RequestParam(required = false) String courseId,
-            @RequestParam(required = false) String categoryId,
-            @RequestParam(required = false) String classroomId) {
+            @RequestBody CourseLessonCreateDTO updateDTO) {
         try {
-            CourseLesson updated = courseLessonAdminService.update(id, courseLesson, courseId, categoryId, classroomId);
+            CourseLessonResponseDTO updated = courseLessonAdminService.update(id, updateDTO);
             return ResponseEntity.ok(updated);
         } catch (EntityNotFoundException e) {
             return ResponseEntity.notFound().build();

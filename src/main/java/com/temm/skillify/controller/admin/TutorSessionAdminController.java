@@ -7,10 +7,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import com.temm.skillify.model.entity.TutorSession;
+import com.temm.skillify.model.dto.request.TutorSessionCreateDTO;
+import com.temm.skillify.model.dto.response.TutorSessionResponseDTO;
 import com.temm.skillify.model.entity.User;
 import com.temm.skillify.service.TutorSessionAdminService;
 import com.temm.skillify.service.UserService;
+
+import jakarta.persistence.EntityNotFoundException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -24,97 +27,89 @@ public class TutorSessionAdminController {
     private final UserService userService;
     
     @GetMapping
-    public ResponseEntity<List<TutorSession>> getAllSessions() {
+    public ResponseEntity<List<TutorSessionResponseDTO>> getAllSessions() {
         return ResponseEntity.ok(tutorSessionService.findAll());
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<TutorSession> getSessionById(@PathVariable String id) {
+    public ResponseEntity<TutorSessionResponseDTO> getSessionById(@PathVariable String id) {
         return tutorSessionService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
     
     @GetMapping("/mentor/{mentorId}")
-    public ResponseEntity<List<TutorSession>> getSessionsByMentor(@PathVariable String mentorId) {
+    public ResponseEntity<List<TutorSessionResponseDTO>> getSessionsByMentor(@PathVariable String mentorId) {
         User mentor = userService.findById(mentorId)
-                .orElseThrow(() -> new RuntimeException("Mentor not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Mentor not found with ID: " + mentorId));
         
         return ResponseEntity.ok(tutorSessionService.findByMentor(mentor));
     }
     
     @GetMapping("/student/{studentId}")
-    public ResponseEntity<List<TutorSession>> getSessionsByStudent(@PathVariable String studentId) {
+    public ResponseEntity<List<TutorSessionResponseDTO>> getSessionsByStudent(@PathVariable String studentId) {
         User student = userService.findById(studentId)
-                .orElseThrow(() -> new RuntimeException("Student not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Student not found with ID: " + studentId));
         
         return ResponseEntity.ok(tutorSessionService.findByStudent(student));
     }
     
     @GetMapping("/mentor/{mentorId}/date/{date}")
-    public ResponseEntity<List<TutorSession>> getSessionsByMentorAndDate(
+    public ResponseEntity<List<TutorSessionResponseDTO>> getSessionsByMentorAndDate(
             @PathVariable String mentorId,
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         
         User mentor = userService.findById(mentorId)
-                .orElseThrow(() -> new RuntimeException("Mentor not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Mentor not found with ID: " + mentorId));
         
         return ResponseEntity.ok(tutorSessionService.findByMentorAndDate(mentor, date));
     }
     
     @GetMapping("/student/{studentId}/date/{date}")
-    public ResponseEntity<List<TutorSession>> getSessionsByStudentAndDate(
+    public ResponseEntity<List<TutorSessionResponseDTO>> getSessionsByStudentAndDate(
             @PathVariable String studentId,
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         
         User student = userService.findById(studentId)
-                .orElseThrow(() -> new RuntimeException("Student not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Student not found with ID: " + studentId));
         
         return ResponseEntity.ok(tutorSessionService.findByStudentAndDate(student, date));
     }
     
     @PostMapping
-    public ResponseEntity<TutorSession> createSession(
-            @RequestBody TutorSession tutorSession,
+    public ResponseEntity<TutorSessionResponseDTO> createSession(
+            @RequestBody TutorSessionCreateDTO tutorSessionCreateDTO,
             Authentication authentication) {
         
         userService.getUserFromAuthentication(authentication); // Verify admin is authenticated
-        TutorSession savedSession = tutorSessionService.save(tutorSession);
-        return new ResponseEntity<>(savedSession, HttpStatus.CREATED);
+        TutorSessionResponseDTO createdSession = tutorSessionService.create(tutorSessionCreateDTO);
+        return new ResponseEntity<>(createdSession, HttpStatus.CREATED);
     }
     
     @PutMapping("/{id}")
-    public ResponseEntity<TutorSession> updateSession(
+    public ResponseEntity<TutorSessionResponseDTO> updateSession(
             @PathVariable String id,
-            @RequestBody TutorSession tutorSession,
+            @RequestBody TutorSessionCreateDTO tutorSessionCreateDTO,
             Authentication authentication) {
         
         userService.getUserFromAuthentication(authentication); // Verify admin is authenticated
         
-        return tutorSessionService.findById(id)
-                .map(existingSession -> {
-                    existingSession.setMentor(tutorSession.getMentor());
-                    existingSession.setStudent(tutorSession.getStudent());
-                    existingSession.setTitle(tutorSession.getTitle());
-                    existingSession.setDate(tutorSession.getDate());
-                    existingSession.setDateHour(tutorSession.getDateHour());
-                    existingSession.setType(tutorSession.getType());
-                    existingSession.setLink(tutorSession.getLink());
-                    
-                    TutorSession updatedSession = tutorSessionService.save(existingSession);
-                    return ResponseEntity.ok(updatedSession);
-                })
-                .orElse(ResponseEntity.notFound().build());
+        try {
+            TutorSessionResponseDTO updatedSession = tutorSessionService.update(id, tutorSessionCreateDTO);
+            return ResponseEntity.ok(updatedSession);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
     
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteSession(@PathVariable String id, Authentication authentication) {
         userService.getUserFromAuthentication(authentication); // Verify admin is authenticated
         
-        if (tutorSessionService.findById(id).isPresent()) {
+        try {
             tutorSessionService.deleteById(id);
             return ResponseEntity.noContent().build();
-        } else {
+        } catch (EntityNotFoundException e) {
             return ResponseEntity.notFound().build();
         }
     }

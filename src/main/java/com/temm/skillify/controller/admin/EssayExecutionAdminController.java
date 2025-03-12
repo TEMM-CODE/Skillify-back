@@ -1,16 +1,13 @@
 package com.temm.skillify.controller.admin;
 
-
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import com.temm.skillify.model.entity.EssayExecution;
+import com.temm.skillify.model.dto.response.EssayExecutionResponseDTO;
+import com.temm.skillify.model.dto.request.EssayExecutionCreateDTO;
 import com.temm.skillify.service.EssayExecutionAdminService;
-
 import jakarta.persistence.EntityNotFoundException;
 
 import java.util.List;
@@ -20,23 +17,22 @@ import java.util.List;
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ROLE_ADMIN')")
 public class EssayExecutionAdminController {
-    
     private final EssayExecutionAdminService essayExecutionAdminService;
     
     @GetMapping
-    public ResponseEntity<List<EssayExecution>> getAllExecutions() {
+    public ResponseEntity<List<EssayExecutionResponseDTO>> getAllExecutions() {
         return ResponseEntity.ok(essayExecutionAdminService.findAll());
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<EssayExecution> getExecutionById(@PathVariable String id) {
+    public ResponseEntity<EssayExecutionResponseDTO> getExecutionById(@PathVariable String id) {
         return essayExecutionAdminService.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+            .map(ResponseEntity::ok)
+            .orElse(ResponseEntity.notFound().build());
     }
     
     @GetMapping("/student/{studentId}")
-    public ResponseEntity<List<EssayExecution>> getExecutionsByStudent(@PathVariable String studentId) {
+    public ResponseEntity<List<EssayExecutionResponseDTO>> getExecutionsByStudent(@PathVariable String studentId) {
         try {
             return ResponseEntity.ok(essayExecutionAdminService.findByStudent(studentId));
         } catch (EntityNotFoundException e) {
@@ -45,12 +41,9 @@ public class EssayExecutionAdminController {
     }
     
     @PostMapping
-    public ResponseEntity<EssayExecution> createExecution(
-            @RequestBody EssayExecution execution,
-            @RequestParam String studentId,
-            @RequestParam String essayId) {
+    public ResponseEntity<EssayExecutionResponseDTO> createExecution(@RequestBody EssayExecutionCreateDTO createDTO) {
         try {
-            EssayExecution created = essayExecutionAdminService.create(execution, studentId, essayId);
+            EssayExecutionResponseDTO created = essayExecutionAdminService.create(createDTO);
             return new ResponseEntity<>(created, HttpStatus.CREATED);
         } catch (EntityNotFoundException e) {
             return ResponseEntity.notFound().build();
@@ -58,13 +51,11 @@ public class EssayExecutionAdminController {
     }
     
     @PutMapping("/{id}")
-    public ResponseEntity<EssayExecution> updateExecution(
-            @PathVariable String id,
-            @RequestBody EssayExecution execution,
-            @RequestParam(required = false) String studentId,
-            @RequestParam(required = false) String essayId) {
+    public ResponseEntity<EssayExecutionResponseDTO> updateExecution(
+        @PathVariable String id,
+        @RequestBody EssayExecutionCreateDTO updateDTO) {
         try {
-            EssayExecution updated = essayExecutionAdminService.update(id, execution, studentId, essayId);
+            EssayExecutionResponseDTO updated = essayExecutionAdminService.update(id, updateDTO);
             return ResponseEntity.ok(updated);
         } catch (EntityNotFoundException e) {
             return ResponseEntity.notFound().build();

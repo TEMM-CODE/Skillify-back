@@ -1,16 +1,14 @@
 package com.temm.skillify.service;
 
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
+import com.temm.skillify.model.dto.response.EssayExecutionResponseDTO;
+import com.temm.skillify.model.dto.request.EssayExecutionCreateDTO;
 import com.temm.skillify.model.entity.EssayExecution;
-import com.temm.skillify.model.entity.Essay;
 import com.temm.skillify.model.entity.User;
 import com.temm.skillify.repository.EssayExecutionRepository;
-import com.temm.skillify.repository.EssayRepository;
 import com.temm.skillify.repository.UserRepository;
-
+import com.temm.skillify.model.mapper.EssayExecutionMapper;
 import jakarta.persistence.EntityNotFoundException;
 
 import java.util.List;
@@ -19,58 +17,40 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class EssayExecutionAdminService {
-    
     private final EssayExecutionRepository essayExecutionRepository;
-    private final EssayRepository essayRepository;
     private final UserRepository userRepository;
+    private final EssayExecutionMapper essayExecutionMapper;
     
-    public List<EssayExecution> findAll() {
-        return essayExecutionRepository.findAll();
+    public List<EssayExecutionResponseDTO> findAll() {
+        List<EssayExecution> executions = essayExecutionRepository.findAll();
+        return essayExecutionMapper.toResponseDTOList(executions);
     }
     
-    public Optional<EssayExecution> findById(String id) {
-        return essayExecutionRepository.findById(id);
+    public Optional<EssayExecutionResponseDTO> findById(String id) {
+        return essayExecutionRepository.findById(id)
+            .map(essayExecutionMapper::toResponseDTO);
     }
     
-    public List<EssayExecution> findByStudent(String studentId) {
+    public List<EssayExecutionResponseDTO> findByStudent(String studentId) {
         User student = userRepository.findById(studentId)
-                .orElseThrow(() -> new EntityNotFoundException("Student not found"));
-        return essayExecutionRepository.findByStudent(student);
+            .orElseThrow(() -> new EntityNotFoundException("Student not found"));
+        List<EssayExecution> executions = essayExecutionRepository.findByStudent(student);
+        return essayExecutionMapper.toResponseDTOList(executions);
     }
     
-    public EssayExecution create(EssayExecution execution, String studentId, String essayId) {
-        User student = userRepository.findById(studentId)
-                .orElseThrow(() -> new EntityNotFoundException("Student not found"));
-        Essay essay = essayRepository.findById(essayId)
-                .orElseThrow(() -> new EntityNotFoundException("Essay not found"));
-        
-        execution.setStudent(student);
-        execution.setEssay(essay);
-        
-        return essayExecutionRepository.save(execution);
+    public EssayExecutionResponseDTO create(EssayExecutionCreateDTO createDTO) {
+        EssayExecution execution = essayExecutionMapper.toEntity(createDTO);
+        EssayExecution saved = essayExecutionRepository.save(execution);
+        return essayExecutionMapper.toResponseDTO(saved);
     }
     
-    public EssayExecution update(String id, EssayExecution updatedExecution, String studentId, String essayId) {
+    public EssayExecutionResponseDTO update(String id, EssayExecutionCreateDTO updateDTO) {
         EssayExecution existingExecution = essayExecutionRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Essay execution not found"));
+            .orElseThrow(() -> new EntityNotFoundException("Essay execution not found"));
         
-        if (studentId != null) {
-            User student = userRepository.findById(studentId)
-                    .orElseThrow(() -> new EntityNotFoundException("Student not found"));
-            existingExecution.setStudent(student);
-        }
-        
-        if (essayId != null) {
-            Essay essay = essayRepository.findById(essayId)
-                    .orElseThrow(() -> new EntityNotFoundException("Essay not found"));
-            existingExecution.setEssay(essay);
-        }
-        
-        if (updatedExecution.getText() != null) {
-            existingExecution.setText(updatedExecution.getText());
-        }
-        
-        return essayExecutionRepository.save(existingExecution);
+        essayExecutionMapper.updateEntityFromDTO(existingExecution, updateDTO);
+        EssayExecution updated = essayExecutionRepository.save(existingExecution);
+        return essayExecutionMapper.toResponseDTO(updated);
     }
     
     public void deleteById(String id) {
