@@ -56,6 +56,7 @@ public class CourseCategoryAdminService {
     private CourseCategoryResponseDTO mapToDTO(CourseCategory entity) {
         CourseCategoryResponseDTO dto = new CourseCategoryResponseDTO();
         dto.setCategoryName(entity.getCategoryName());
+        dto.setId(entity.getId());
         // If BaseResponseDTO has fields that need to be set (like id), set them here
         // For example, assuming BaseResponseDTO has an id field:
         // dto.setId(entity.getId());

@@ -3,6 +3,7 @@ package com.temm.skillify.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -69,4 +70,13 @@ public class AuthController {
                 })
                 .orElseGet(() -> ResponseEntity.badRequest().body(null)); // Invalid token
     }
+
+    @PostMapping("/validateToken/{token}")
+public ResponseEntity<Boolean> validateToken(
+        @PathVariable("token") String token
+) {
+    return classroomAccessTokenService.findByToken(token)
+            .map(tokenDTO -> ResponseEntity.ok(true)) // Token is valid
+            .orElseGet(() -> ResponseEntity.ok(false)); // Token is invalid
+}
 }
