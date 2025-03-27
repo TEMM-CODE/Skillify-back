@@ -14,4 +14,5 @@ import java.util.Optional;
 public interface ClassroomRepository extends JpaRepository<Classroom, String> {
     List<Classroom> findByMentor(User mentor);
     Optional<Classroom> findByIdAndMentor(String id, User mentor);
+    List<Classroom> findByStudentsContaining(User student);
 }

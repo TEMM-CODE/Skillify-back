@@ -54,6 +54,13 @@ public class UserService {
     public User save(User user) {
         return userRepository.save(user);
     }
+
+    public List<UserResponseDTO> findAllMentorsDto() {
+        return userRepository.findByRole(UserRole.MENTOR)
+            .stream()
+            .map(userMapper::toResponseDTO)
+            .collect(Collectors.toList());
+    }
     
     public UserResponseDTO saveAndReturnDto(User user) {
         return userMapper.toResponseDTO(save(user));

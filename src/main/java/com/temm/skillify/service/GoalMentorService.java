@@ -36,11 +36,6 @@ public class GoalMentorService {
     @Autowired
     private GoalMapper goalMapper;
 
-    /**
-     * Create a new goal for specified classrooms
-     * @param goalRequestDTO The goal details
-     * @return The created goal
-     */
     public GoalResponseDTO createGoal(GoalRequestDTO goalRequestDTO) {
         User mentor = getCurrentUser();
         
@@ -52,13 +47,6 @@ public class GoalMentorService {
         return goalMapper.toResponseDTO(savedGoal);
     }
     
-    /**
-     * Update an existing goal
-     * @param goalId The ID of the goal to update
-     * @param goalRequestDTO The updated goal details
-     * @return The updated goal
-     * @throws Exception if the goal doesn't exist or the mentor doesn't have access
-     */
     public GoalResponseDTO updateGoal(String goalId, GoalRequestDTO goalRequestDTO) throws Exception {
         User mentor = getCurrentUser();
         
@@ -86,11 +74,6 @@ public class GoalMentorService {
         return goalMapper.toResponseDTO(updatedGoal);
     }
     
-    /**
-     * Delete a goal
-     * @param goalId The ID of the goal to delete
-     * @throws Exception if the goal doesn't exist or the mentor doesn't have access
-     */
     public void deleteGoal(String goalId) throws Exception {
         User mentor = getCurrentUser();
         
@@ -113,13 +96,9 @@ public class GoalMentorService {
         goalRepository.delete(goal);
     }
     
-    /**
-     * Get all goals for a mentor (based on their mentored classrooms)
-     * @return List of all goals for the current mentor
-     */
     public List<GoalResponseDTO> getAllGoalsForCurrentMentor() {
         User mentor = getCurrentUser();
-        List<Classroom> mentoredClassrooms = mentor.getMentoredClassrooms();
+        List<Classroom> mentoredClassrooms = classroomRepository.findByMentor(mentor);
         
         List<Goal> allGoals = mentoredClassrooms.stream()
             .flatMap(classroom -> goalRepository.findByClassroomsContaining(classroom).stream())
@@ -129,13 +108,9 @@ public class GoalMentorService {
         return goalMapper.toResponseDTOList(allGoals);
     }
     
-    /**
-     * Get active goals for a mentor (based on their mentored classrooms)
-     * @return List of active goals for the current mentor
-     */
     public List<GoalResponseDTO> getActiveGoalsForCurrentMentor() {
         User mentor = getCurrentUser();
-        List<Classroom> mentoredClassrooms = mentor.getMentoredClassrooms();
+        List<Classroom> mentoredClassrooms = classroomRepository.findByMentor(mentor);
         LocalDateTime now = LocalDateTime.now();
         
         List<Goal> activeGoals = mentoredClassrooms.stream()
@@ -147,15 +122,9 @@ public class GoalMentorService {
         return goalMapper.toResponseDTOList(activeGoals);
     }
     
-    /**
-     * Get a specific goal by ID if the mentor has access to it
-     * @param goalId The ID of the goal to retrieve
-     * @return The goal if the mentor has access to it
-     * @throws Exception if the goal doesn't exist or the mentor doesn't have access
-     */
     public GoalResponseDTO getGoalById(String goalId) throws Exception {
         User mentor = getCurrentUser();
-        List<Classroom> mentoredClassrooms = mentor.getMentoredClassrooms();
+        List<Classroom> mentoredClassrooms = classroomRepository.findByMentor(mentor);
         
         Optional<Goal> goalOptional = goalRepository.findById(goalId);
         
@@ -176,14 +145,9 @@ public class GoalMentorService {
         return goalMapper.toResponseDTO(goal);
     }
     
-    /**
-     * Get goals by type for a mentor
-     * @param type The goal type
-     * @return List of goals of the specified type for the current mentor
-     */
     public List<GoalResponseDTO> getGoalsByTypeForCurrentMentor(GoalType type) {
         User mentor = getCurrentUser();
-        List<Classroom> mentoredClassrooms = mentor.getMentoredClassrooms();
+        List<Classroom> mentoredClassrooms = classroomRepository.findByMentor(mentor);
         
         List<Goal> typeGoals = mentoredClassrooms.stream()
             .flatMap(classroom -> goalRepository.findByClassroomsContaining(classroom).stream())
@@ -202,7 +166,7 @@ public class GoalMentorService {
     }
     
     private void validateMentorClassroomAccess(User mentor, List<String> classroomIds) {
-        List<Classroom> mentoredClassrooms = mentor.getMentoredClassrooms();
+        List<Classroom> mentoredClassrooms = classroomRepository.findByMentor(mentor);
         List<String> mentoredClassroomIds = mentoredClassrooms.stream()
             .map(Classroom::getId)
             .collect(Collectors.toList());

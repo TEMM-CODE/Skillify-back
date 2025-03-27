@@ -29,6 +29,11 @@ public class UserAdminController {
             .map(ResponseEntity::ok)
             .orElse(ResponseEntity.notFound().build());
     }
+
+    @GetMapping("/mentors")
+    public ResponseEntity<List<UserResponseDTO>> getAllMentors() {
+        return ResponseEntity.ok(userService.findAllMentorsDto());
+    }
     
     @PostMapping
     public ResponseEntity<UserResponseDTO> createUser(@RequestBody RegisterRequest user) {
