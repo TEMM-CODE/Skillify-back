@@ -24,8 +24,6 @@ public class CourseLesson extends BaseEntity {
     @ManyToOne(fetch = FetchType.EAGER)
     private CourseLessonCategory courseLessonCategory;
     
-    @ManyToOne(fetch = FetchType.EAGER)
-    private Classroom classroom;
     
     @ElementCollection(fetch = FetchType.EAGER)
     private List<String> files;

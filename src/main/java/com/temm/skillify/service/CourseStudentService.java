@@ -37,30 +37,6 @@ public class CourseStudentService {
         return mapToCourseResponseDTO(course);
     }
 
-    public List<CourseResponseDTO> getEnrolledCourses(Authentication authentication) {
-        User student = userService.getUserFromAuthentication(authentication);
-        
-        // Get classrooms where the student is enrolled
-        List<Classroom> classrooms = classroomRepository.findAll().stream()
-                .filter(classroom -> classroom.getStudents().contains(student))
-                .collect(Collectors.toList());
-        
-        // Get courses through course lessons associated with these classrooms
-        Set<Course> enrolledCourses = new HashSet<>();
-        for (Classroom classroom : classrooms) {
-            List<CourseLesson> lessons = courseLessonRepository.findAll().stream()
-                    .filter(lesson -> lesson.getClassroom() != null && lesson.getClassroom().getId().equals(classroom.getId()))
-                    .collect(Collectors.toList());
-            
-            for (CourseLesson lesson : lessons) {
-                enrolledCourses.add(lesson.getCourse());
-            }
-        }
-        
-        return enrolledCourses.stream()
-                .map(this::mapToCourseResponseDTO)
-                .collect(Collectors.toList());
-    }
 
     public List<CourseLessonCategoryResponseDTO> getCourseLessonCategories(String courseId) {
         Course course = courseRepository.findById(courseId)
@@ -92,35 +68,7 @@ public class CourseStudentService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional
-    public void enrollInCourse(String courseId, Authentication authentication) {
-        Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new EntityNotFoundException("Course not found with id: " + courseId));
-        
-        User student = userService.getUserFromAuthentication(authentication);
-        
-        // Assuming there's a default or general classroom for the course
-        // In a real application, you might need more complex logic here
-        List<Classroom> classrooms = classroomRepository.findAll().stream()
-                .filter(classroom -> {
-                    List<CourseLesson> lessons = courseLessonRepository.findByCourse(course);
-                    return lessons.stream().anyMatch(lesson -> 
-                            lesson.getClassroom() != null && lesson.getClassroom().getId().equals(classroom.getId()));
-                })
-                .collect(Collectors.toList());
-        
-        if (classrooms.isEmpty()) {
-            throw new EntityNotFoundException("No classroom found for this course");
-        }
-        
-        // Enroll student in the first available classroom
-        Classroom classroom = classrooms.get(0);
-        Set<User> students = classroom.getStudents();
-        students.add(student);
-        classroom.setStudents(students);
-        
-        classroomRepository.save(classroom);
-    }
+
 
     private CourseResponseDTO mapToCourseResponseDTO(Course course) {
         CourseResponseDTO dto = new CourseResponseDTO();
@@ -196,12 +144,7 @@ public class CourseStudentService {
         }
         
         // Map classroom information if available
-        if (lesson.getClassroom() != null) {
-            ClassroomResponseDTO classroomDTO = new ClassroomResponseDTO();
-            classroomDTO.setId(lesson.getClassroom().getId());
-            classroomDTO.setName(lesson.getClassroom().getName());
-            dto.setClassroom(classroomDTO);
-        }
+
         
         return dto;
     }

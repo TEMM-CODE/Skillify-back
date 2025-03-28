@@ -31,11 +31,6 @@ public class CourseStudentController {
         return ResponseEntity.ok(courseStudentService.getCourseById(id));
     }
 
-    @GetMapping("/enrolled")
-    public ResponseEntity<List<CourseResponseDTO>> getEnrolledCourses(Authentication authentication) {
-        return ResponseEntity.ok(courseStudentService.getEnrolledCourses(authentication));
-    }
-
     @GetMapping("/{courseId}/categories")
     public ResponseEntity<List<CourseLessonCategoryResponseDTO>> getCourseLessonCategories(@PathVariable String courseId) {
         return ResponseEntity.ok(courseStudentService.getCourseLessonCategories(courseId));
@@ -51,9 +46,5 @@ public class CourseStudentController {
         return ResponseEntity.ok(courseStudentService.getLessonsByCategory(categoryId));
     }
 
-    @PostMapping("/{courseId}/enroll")
-    public ResponseEntity<Void> enrollInCourse(@PathVariable String courseId, Authentication authentication) {
-        courseStudentService.enrollInCourse(courseId, authentication);
-        return ResponseEntity.ok().build();
-    }
+    
 }

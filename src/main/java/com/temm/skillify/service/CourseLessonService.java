@@ -1,13 +1,10 @@
 package com.temm.skillify.service;
 
 import com.temm.skillify.model.dto.request.CourseLessonCreateDTO;
-import com.temm.skillify.model.dto.response.CourseLessonResponseDTO;
 import com.temm.skillify.model.entity.Course;
 import com.temm.skillify.model.entity.CourseLesson;
 import com.temm.skillify.model.entity.CourseLessonCategory;
-import com.temm.skillify.model.entity.Classroom;
 import com.temm.skillify.model.entity.User;
-import com.temm.skillify.repository.ClassroomRepository;
 import com.temm.skillify.repository.CourseLessonCategoryRepository;
 import com.temm.skillify.repository.CourseLessonRepository;
 import com.temm.skillify.repository.CourseRepository;
@@ -32,8 +29,6 @@ public class CourseLessonService {
     @Autowired
     private CourseLessonCategoryRepository courseLessonCategoryRepository;
     
-    @Autowired
-    private ClassroomRepository classroomRepository;
 
     public List<CourseLesson> getAllLessonsByMentor() {
         User currentUser = getCurrentUser();
@@ -113,18 +108,6 @@ public class CourseLessonService {
             lesson.setCourseLessonCategory(category);
         }
         
-        // If classroom is provided, set it
-        if (createDTO.getClassroomId() != null) {
-            Classroom classroom = classroomRepository.findById(createDTO.getClassroomId())
-                    .orElseThrow(() -> new NoSuchElementException("Classroom not found"));
-            
-            // Verify mentor has access to this classroom (optional check)
-            if (!classroom.getMentor().getId().equals(currentUser.getId())) {
-                throw new SecurityException("You don't have permission to use this classroom");
-            }
-            
-            lesson.setClassroom(classroom);
-        }
         
         return courseLessonRepository.save(lesson);
     }
@@ -149,19 +132,6 @@ public class CourseLessonService {
             existingLesson.setCourseLessonCategory(category);
         }
         
-        // If classroom is being updated
-        if (updateDTO.getClassroomId() != null) {
-            Classroom classroom = classroomRepository.findById(updateDTO.getClassroomId())
-                    .orElseThrow(() -> new NoSuchElementException("Classroom not found"));
-            
-            // Verify mentor has access to this classroom (optional check)
-            User currentUser = getCurrentUser();
-            if (!classroom.getMentor().getId().equals(currentUser.getId())) {
-                throw new SecurityException("You don't have permission to use this classroom");
-            }
-            
-            existingLesson.setClassroom(classroom);
-        }
         
         return courseLessonRepository.save(existingLesson);
     }

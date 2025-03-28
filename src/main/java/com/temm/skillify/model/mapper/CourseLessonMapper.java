@@ -1,7 +1,7 @@
 package com.temm.skillify.model.mapper;
 
 
-import com.temm.skillify.model.dto.response.ClassroomResponseDTO;
+
 import com.temm.skillify.model.dto.response.CourseCategoryResponseDTO;
 import com.temm.skillify.model.dto.response.CourseLessonCategoryResponseDTO;
 import com.temm.skillify.model.dto.response.CourseLessonResponseDTO;
@@ -82,39 +82,6 @@ public class CourseLessonMapper {
             dto.setCourseLessonCategory(categoryDTO);
         }
         
-        // Set classroom if available
-        if (entity.getClassroom() != null) {
-            ClassroomResponseDTO classroomDTO = new ClassroomResponseDTO();
-            classroomDTO.setId(entity.getClassroom().getId());
-            classroomDTO.setName(entity.getClassroom().getName());
-            
-            // Set mentor if available
-            if (entity.getClassroom().getMentor() != null) {
-                UserResponseDTO mentorDTO = new UserResponseDTO();
-                mentorDTO.setId(entity.getClassroom().getMentor().getId());
-                mentorDTO.setName(entity.getClassroom().getMentor().getName());
-                mentorDTO.setEmail(entity.getClassroom().getMentor().getEmail());
-                mentorDTO.setRole(entity.getClassroom().getMentor().getRole());
-                
-                classroomDTO.setMentor(mentorDTO);
-            }
-            
-            // Set students if available
-            if (entity.getClassroom().getStudents() != null) {
-                classroomDTO.setStudents(entity.getClassroom().getStudents().stream()
-                        .map(student -> {
-                            UserResponseDTO studentDTO = new UserResponseDTO();
-                            studentDTO.setId(student.getId());
-                            studentDTO.setName(student.getName());
-                            studentDTO.setEmail(student.getEmail());
-                            studentDTO.setRole(student.getRole());
-                            return studentDTO;
-                        })
-                        .collect(Collectors.toSet()));
-            }
-            
-            dto.setClassroom(classroomDTO);
-        }
         
         return dto;
     }

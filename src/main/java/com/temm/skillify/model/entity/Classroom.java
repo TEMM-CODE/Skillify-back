@@ -25,4 +25,7 @@ public class Classroom extends BaseEntity {
     
     @ManyToOne(fetch = FetchType.EAGER)
     private User mentor;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    private Set<Course> courses;
 }

@@ -8,12 +8,10 @@ import com.temm.skillify.model.dto.response.CourseLessonResponseDTO;
 import com.temm.skillify.model.entity.Course;
 import com.temm.skillify.model.entity.CourseLesson;
 import com.temm.skillify.model.entity.CourseLessonCategory;
-import com.temm.skillify.model.entity.Classroom;
 import com.temm.skillify.model.mapper.CourseLessonMapper;
 import com.temm.skillify.repository.CourseLessonRepository;
 import com.temm.skillify.repository.CourseRepository;
 import com.temm.skillify.repository.CourseLessonCategoryRepository;
-import com.temm.skillify.repository.ClassroomRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 
@@ -28,7 +26,7 @@ public class CourseLessonAdminService {
     private final CourseLessonRepository courseLessonRepository;
     private final CourseRepository courseRepository;
     private final CourseLessonCategoryRepository courseLessonCategoryRepository;
-    private final ClassroomRepository classroomRepository;
+
     private final CourseLessonMapper courseLessonMapper;
     
     public List<CourseLessonResponseDTO> findAll() {
@@ -73,12 +71,7 @@ public class CourseLessonAdminService {
                     .orElseThrow(() -> new EntityNotFoundException("Course lesson category not found"));
             courseLesson.setCourseLessonCategory(category);
         }
-        
-        if (createDTO.getClassroomId() != null) {
-            Classroom classroom = classroomRepository.findById(createDTO.getClassroomId())
-                    .orElseThrow(() -> new EntityNotFoundException("Classroom not found"));
-            courseLesson.setClassroom(classroom);
-        }
+    
         
         CourseLesson savedLesson = courseLessonRepository.save(courseLesson);
         return courseLessonMapper.toResponseDTO(savedLesson);
@@ -100,11 +93,6 @@ public class CourseLessonAdminService {
             existingLesson.setCourseLessonCategory(category);
         }
         
-        if (updateDTO.getClassroomId() != null) {
-            Classroom classroom = classroomRepository.findById(updateDTO.getClassroomId())
-                    .orElseThrow(() -> new EntityNotFoundException("Classroom not found"));
-            existingLesson.setClassroom(classroom);
-        }
         
         if (updateDTO.getName() != null) {
             existingLesson.setName(updateDTO.getName());
