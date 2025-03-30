@@ -86,4 +86,10 @@ public class MessageService {
                 .filter(classroom -> classroom.getStudents().contains(student))
                 .anyMatch(classroom -> classroom.getMentor().equals(potentialMentor));
     }
+
+    public boolean isStudentOfMentorClassroom(User student, User potentialMentor) {
+        return classroomService.findAll().stream()
+                .filter(classroom -> classroom.getMentor().equals(potentialMentor))
+                .anyMatch(classroom -> classroom.getStudents().contains(student));
+    }
 }
