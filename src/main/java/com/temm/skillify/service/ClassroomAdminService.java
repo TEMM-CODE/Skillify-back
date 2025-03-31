@@ -4,10 +4,12 @@ import com.temm.skillify.model.dto.request.ClassroomCreateDTO;
 import com.temm.skillify.model.dto.response.ClassroomResponseDTO;
 import com.temm.skillify.model.entity.Classroom;
 import com.temm.skillify.model.entity.ClassroomAccessToken;
+import com.temm.skillify.model.entity.Course;
 import com.temm.skillify.model.entity.User;
 import com.temm.skillify.model.mapper.ClassroomMapper;
 import com.temm.skillify.repository.ClassroomAccessTokenRepository;
 import com.temm.skillify.repository.ClassroomRepository;
+import com.temm.skillify.repository.CourseRepository;
 import com.temm.skillify.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +25,7 @@ public class ClassroomAdminService {
     private final ClassroomAccessTokenRepository tokenRepository;
     private final UserRepository userRepository;
     private final ClassroomMapper classroomMapper;
+    private final CourseRepository courseRepository;
 
     public List<ClassroomResponseDTO> findAllClassrooms() {
         return classroomRepository.findAll().stream()
@@ -56,9 +59,40 @@ public class ClassroomAdminService {
         } else {
             classroom.setStudents(new HashSet<>());
         }
+
+        // Set courses if provided
+        if (classroomDTO.getCourseIds() != null && !classroomDTO.getCourseIds().isEmpty()) {
+            Set<Course> courses = classroomDTO.getCourseIds().stream()
+                    .map(id -> courseRepository.findById(id)
+                            .orElseThrow(() -> new EntityNotFoundException("Course not found with id: " + id)))
+                    .collect(Collectors.toSet());
+            classroom.setCourses(courses);
+        } else {
+            classroom.setCourses(new HashSet<>());
+        }
+        
         
         Classroom savedClassroom = classroomRepository.save(classroom);
         return classroomMapper.toResponseDTO(savedClassroom);
+    }
+
+    public ClassroomResponseDTO editCourseClassrooms(String classroomId, ClassroomCreateDTO classroomDTO) {
+        Classroom classroom = classroomRepository.findById(classroomId)
+                .orElseThrow(() -> new EntityNotFoundException("Classroom not found with id: " + classroomId));
+
+        // Update courses if provided
+        if (classroomDTO.getCourseIds() != null) {
+            Set<Course> courses = classroomDTO.getCourseIds().stream()
+                    .map(id -> courseRepository.findById(id)
+                            .orElseThrow(() -> new EntityNotFoundException("Course not found with id: " + id)))
+                    .collect(Collectors.toSet());
+            classroom.setCourses(courses);
+        } else {
+            classroom.setCourses(new HashSet<>());
+        }
+
+        Classroom updatedClassroom = classroomRepository.save(classroom);
+        return classroomMapper.toResponseDTO(updatedClassroom);
     }
 
     public ClassroomResponseDTO updateClassroom(String id, ClassroomCreateDTO classroomDTO) {

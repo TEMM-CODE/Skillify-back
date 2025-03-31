@@ -8,4 +8,5 @@ public class ClassroomCreateDTO {
     private String name;
     private Set<String> studentIds;
     private String mentorId;
+    private Set<String> courseIds;
 }

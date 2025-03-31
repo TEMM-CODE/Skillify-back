@@ -78,4 +78,11 @@ public class ClassroomAdminController {
             @RequestBody Set<String> studentIds) {
         return ResponseEntity.ok(classroomAdminService.updateClassroomStudents(id, studentIds));
     }
+
+    @PutMapping("/{id}/courses")
+    public ResponseEntity<ClassroomResponseDTO> editCourseClassrooms(
+            @PathVariable String id,
+            @RequestBody ClassroomCreateDTO classroomDTO) {
+        return ResponseEntity.ok(classroomAdminService.editCourseClassrooms(id, classroomDTO));
+    }
 }
