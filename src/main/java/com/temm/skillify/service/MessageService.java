@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.temm.skillify.model.dto.request.MessageCreateDTO;
 import com.temm.skillify.model.dto.response.MessageResponseDTO;
+import com.temm.skillify.model.entity.Classroom;
 import com.temm.skillify.model.entity.Message;
 import com.temm.skillify.model.entity.User;
 import com.temm.skillify.model.mapper.MessageMapper;
@@ -92,4 +93,11 @@ public class MessageService {
                 .filter(classroom -> classroom.getMentor().equals(potentialMentor))
                 .anyMatch(classroom -> classroom.getStudents().contains(student));
     }
+
+public List<User> findMentorByStudent(User student) {
+    return classroomService.findAll().stream()
+            .filter(classroom -> classroom.getStudents().contains(student))
+            .map(Classroom::getMentor)
+            .toList();
+}
 }

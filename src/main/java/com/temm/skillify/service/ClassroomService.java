@@ -8,6 +8,7 @@ import com.temm.skillify.model.dto.response.ClassroomResponseDTO;
 import com.temm.skillify.model.dto.response.UserResponseDTO;
 import com.temm.skillify.model.entity.Classroom;
 import com.temm.skillify.model.entity.User;
+import com.temm.skillify.model.mapper.ClassroomMapper;
 import com.temm.skillify.repository.ClassroomRepository;
 
 import java.util.HashSet;
@@ -22,6 +23,7 @@ public class ClassroomService {
 
     private final ClassroomRepository classroomRepository;
     private final UserService userService;
+    private final ClassroomMapper classroomMapper;
 
     // Entity methods - kept for backward compatibility
     public List<Classroom> findAll() {
@@ -65,7 +67,7 @@ public class ClassroomService {
 
     public List<ClassroomResponseDTO> findAllDTOsByMentorEmail(String email) {
         return findAllByMentorEmail(email).stream()
-                .map(this::convertToDTO)
+                .map(classroomMapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
 

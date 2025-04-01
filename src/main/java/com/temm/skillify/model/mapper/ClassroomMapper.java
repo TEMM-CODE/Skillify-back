@@ -35,6 +35,18 @@ public class ClassroomMapper {
                     .map(userMapper::toResponseDTO)
                     .collect(Collectors.toSet()));
         }
+
+        if (classroom.getCourses() != null) {
+            dto.setCourses(classroom.getCourses().stream()
+                    .map(course -> {
+                        ClassroomCourseReturnDTO courseDTO = new ClassroomCourseReturnDTO();
+                        courseDTO.setId(course.getId());
+                        courseDTO.setName(course.getName());
+                        return courseDTO;
+                    })
+                    .collect(Collectors.toList()));
+        }
+
         
         return dto;
     }

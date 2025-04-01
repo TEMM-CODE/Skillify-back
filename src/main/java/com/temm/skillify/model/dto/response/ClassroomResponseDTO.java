@@ -2,6 +2,8 @@ package com.temm.skillify.model.dto.response;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -10,4 +12,5 @@ public class ClassroomResponseDTO extends BaseResponseDTO {
     private String name;
     private Set<UserResponseDTO> students;
     private UserResponseDTO mentor;
+    private List<ClassroomCourseReturnDTO> courses;
 }
