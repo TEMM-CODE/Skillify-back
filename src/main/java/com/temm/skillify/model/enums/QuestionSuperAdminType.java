@@ -1,15 +1,16 @@
 package com.temm.skillify.model.enums;
 
-
-public enum UserRole {
-    ADMIN("ROLE_ADMIN"),
-    ESTUDANTE("ROLE_ESTUDANTE"),
-    MENTOR("ROLE_MENTOR"),
-    SUPERADMIN("ROLE_SUPERADMIN");
+public enum QuestionSuperAdminType {
+    MATEMATICA("MATEMATICA"),
+    FISICA("FISICA"),
+    GEOGRAFIA("GEOGRAFIA"),
+    BIOLOGIA("BIOLOGIA"),
+    ENEM("ENEM"),
+    FUVEST("FUVEST");
 
     private final String role;
 
-    UserRole(String role) {
+    QuestionSuperAdminType(String role) {
         this.role = role;
     }
 

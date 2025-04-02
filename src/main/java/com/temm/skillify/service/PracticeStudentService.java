@@ -6,6 +6,7 @@ import com.temm.skillify.model.dto.response.PracticeResponseDTO;
 import com.temm.skillify.model.entity.Classroom;
 import com.temm.skillify.model.entity.Practice;
 import com.temm.skillify.model.entity.User;
+import com.temm.skillify.model.enums.UserRole;
 import com.temm.skillify.repository.ClassroomRepository;
 import com.temm.skillify.repository.PracticeRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -31,7 +32,7 @@ public class PracticeStudentService {
         User student = userService.getUserFromAuthentication(authentication);
         
         // Get all classrooms where the student is enrolled
-        Set<Classroom> studentClassrooms = student.getRole().name().equals("ESTUDANTE") ? 
+        Set<Classroom> studentClassrooms = student.getRole().equals(UserRole.ESTUDANTE) ? 
                 classroomRepository.findAll().stream()
                 .filter(classroom -> classroom.getStudents().contains(student))
                 .collect(Collectors.toSet()) : 
@@ -42,8 +43,8 @@ public class PracticeStudentService {
         
         return studentClassrooms.stream()
                 .flatMap(classroom -> practiceRepository.findByClassroom(classroom).stream())
-                .filter(practice -> practice.getOpeningDate().isBefore(now) && 
-                                   practice.getMaximumDate().isAfter(now))
+                /*.filter(practice -> practice.getOpeningDate().isBefore(now) && 
+                                   practice.getMaximumDate().isAfter(now)) */
                 .map(mappingService::mapToPracticeResponseDTO)
                 .collect(Collectors.toList());
     }

@@ -1,5 +1,5 @@
+// Question.java
 package com.temm.skillify.model.entity;
-
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -7,13 +7,15 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.Set;
 
 import com.temm.skillify.model.categories.BaseEntity;
+import com.temm.skillify.model.enums.QuestionSuperAdminType;
 
 @Entity
 @Data
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, exclude = {"options"}) // Exclude options from hashCode/equals
 @NoArgsConstructor
 @AllArgsConstructor
 public class Question extends BaseEntity {
@@ -25,4 +27,10 @@ public class Question extends BaseEntity {
     
     @ManyToOne(fetch = FetchType.EAGER)
     private User mentor;
+
+    @ElementCollection(targetClass = QuestionSuperAdminType.class)
+    @Enumerated(EnumType.STRING)
+    @CollectionTable(name = "question_super_admin_types", joinColumns = @JoinColumn(name = "question_id"))
+    @Column(name = "super_admin_type")
+    private List<QuestionSuperAdminType> superAdminTypes;
 }

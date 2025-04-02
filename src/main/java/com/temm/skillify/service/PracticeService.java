@@ -133,7 +133,7 @@ public class PracticeService {
                 .orElseThrow(() -> new EntityNotFoundException("Practice not found or you don't have permission"));
         
         Question question = questionRepository.findById(questionId)
-                .filter(q -> q.getMentor().getId().equals(mentor.getId()))
+                //.filter(q -> q.getMentor().getId().equals(mentor.getId()))
                 .orElseThrow(() -> new EntityNotFoundException("Question not found or you don't have permission"));
         
         practice.getQuestions().add(question);

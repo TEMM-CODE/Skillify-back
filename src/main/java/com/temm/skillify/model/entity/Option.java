@@ -1,3 +1,4 @@
+// Option.java
 package com.temm.skillify.model.entity;
 
 import com.temm.skillify.model.categories.BaseEntity;
@@ -10,7 +11,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Data
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, exclude = {"question"}) // Exclude question from hashCode/equals
 @NoArgsConstructor
 @AllArgsConstructor
 public class Option extends BaseEntity {

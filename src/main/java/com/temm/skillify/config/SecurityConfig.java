@@ -49,6 +49,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/student/**").hasAnyAuthority(UserRole.ESTUDANTE.getRole(), UserRole.MENTOR.getRole(), UserRole.ADMIN.getRole())
                 .requestMatchers("/api/admin/**").hasAnyAuthority(UserRole.ADMIN.getRole())
                 .requestMatchers("/api/mentor/**").hasAnyAuthority(UserRole.MENTOR.getRole(), UserRole.ADMIN.getRole())
+                .requestMatchers("/api/superadmin/**").hasAnyAuthority(UserRole.SUPERADMIN.getRole())
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

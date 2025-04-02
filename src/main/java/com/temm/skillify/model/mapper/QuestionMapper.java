@@ -4,11 +4,13 @@ import com.temm.skillify.model.dto.request.QuestionCreateDTO;
 import com.temm.skillify.model.dto.response.QuestionResponseDTO;
 import com.temm.skillify.model.entity.Question;
 import com.temm.skillify.model.entity.User;
+import com.temm.skillify.model.enums.QuestionSuperAdminType;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
@@ -40,6 +42,11 @@ public class QuestionMapper {
             dto.setOptions(new HashSet<>());
         }
         
+        // Only add superAdminTypes if present
+        if (entity.getSuperAdminTypes() != null && !entity.getSuperAdminTypes().isEmpty()) {
+            dto.setSuperAdminTypes(entity.getSuperAdminTypes());
+        }
+        
         return dto;
     }
     
@@ -52,6 +59,11 @@ public class QuestionMapper {
         entity.setTitle(dto.getTitle());
         entity.setMentor(mentor);
         entity.setOptions(new HashSet<>());
+        
+        // Only set superAdminTypes if present in DTO
+        if (dto.getSuperAdminTypes() != null && !dto.getSuperAdminTypes().isEmpty()) {
+            entity.setSuperAdminTypes(dto.getSuperAdminTypes());
+        }
         
         return entity;
     }

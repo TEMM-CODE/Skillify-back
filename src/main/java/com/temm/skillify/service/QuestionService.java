@@ -5,6 +5,7 @@ import com.temm.skillify.model.dto.response.QuestionResponseDTO;
 import com.temm.skillify.model.entity.Option;
 import com.temm.skillify.model.entity.Question;
 import com.temm.skillify.model.entity.User;
+import com.temm.skillify.model.enums.UserRole;
 import com.temm.skillify.model.mapper.QuestionMapper;
 import com.temm.skillify.repository.OptionRepository;
 import com.temm.skillify.repository.QuestionRepository;
@@ -34,6 +35,22 @@ public class QuestionService {
                 .map(questionMapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
+
+    public List<QuestionResponseDTO> findAllBySuperAdmin(Authentication authentication) {
+    // Ensure user is authenticated
+    User currentUser = userService.getUserFromAuthentication(authentication);
+    
+    // Find all questions where the mentor has SUPERADMIN role
+    List<Question> superAdminQuestions = questionRepository.findAll().stream()
+            .filter(question -> question.getMentor() != null && 
+                              question.getMentor().getRole() == UserRole.SUPERADMIN)
+            .collect(Collectors.toList());
+    
+    // Convert to DTOs and return
+    return superAdminQuestions.stream()
+            .map(questionMapper::toResponseDTO)
+            .collect(Collectors.toList());
+}
 
     public QuestionResponseDTO findByIdAndMentor(String id, Authentication authentication) {
         User mentor = userService.getUserFromAuthentication(authentication);
@@ -85,7 +102,7 @@ public class QuestionService {
         User mentor = userService.getUserFromAuthentication(authentication);
         
         Question question = questionRepository.findById(questionId)
-                .filter(q -> q.getMentor().getId().equals(mentor.getId()))
+                //.filter(q -> q.getMentor().getId().equals(mentor.getId()))
                 .orElseThrow(() -> new EntityNotFoundException("Question not found or you don't have permission"));
         
         for (Option option : options) {

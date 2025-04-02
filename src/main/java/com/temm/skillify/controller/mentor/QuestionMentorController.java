@@ -75,4 +75,9 @@ public class QuestionMentorController {
             Authentication authentication) {
         return ResponseEntity.ok(questionService.deleteOption(questionId, optionId, authentication));
     }
+
+    @GetMapping("/superadmin")
+    public ResponseEntity<List<QuestionResponseDTO>> getSuperAdminQuestions(Authentication authentication) {
+        return ResponseEntity.ok(questionService.findAllBySuperAdmin(authentication));
+    }
 }
