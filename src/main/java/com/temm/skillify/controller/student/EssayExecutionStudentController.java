@@ -32,7 +32,7 @@ public class EssayExecutionStudentController {
 
     @PostMapping
     public ResponseEntity<EssayExecutionResponseDTO> createEssayExecution(@RequestBody EssayExecutionCreateDTO createDTO, Authentication authentication) {
-        return ResponseEntity.ok(essayExecutionService.saveForStudent(createDTO, authentication.getName()));
+        return ResponseEntity.ok(essayExecutionService.saveForStudent(createDTO));
     }
 
     @PutMapping("/{id}")

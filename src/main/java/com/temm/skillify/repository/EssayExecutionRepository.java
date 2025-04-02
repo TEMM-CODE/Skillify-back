@@ -14,4 +14,5 @@ import java.util.Optional;
 public interface EssayExecutionRepository extends JpaRepository<EssayExecution, String> {
     List<EssayExecution> findByStudent(User student);
     Optional<EssayExecution> findByIdAndStudent(String id, User student);
+    List<EssayExecution> findByEssayClassroomIdIn(List<String> classroomIds);
 }

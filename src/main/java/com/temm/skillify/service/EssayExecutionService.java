@@ -1,6 +1,9 @@
 package com.temm.skillify.service;
 
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.temm.skillify.model.dto.request.EssayExecutionCreateDTO;
@@ -53,10 +56,11 @@ public class EssayExecutionService {
         return essayExecutionMapper.toResponseDTO(savedExecution);
     }
 
-    public EssayExecutionResponseDTO saveForStudent(EssayExecutionCreateDTO createDTO, String studentEmail) {
-        User student = userService.findByEmail(studentEmail).orElseThrow(() -> 
-            new RuntimeException("Student not found with email: " + studentEmail));
-        
+    public EssayExecutionResponseDTO saveForStudent(EssayExecutionCreateDTO createDTO) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User student = (User) authentication.getPrincipal();
+
         // Create entity from DTO
         EssayExecution essayExecution = new EssayExecution();
         essayExecution.setStudent(student);
