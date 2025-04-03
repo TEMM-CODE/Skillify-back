@@ -27,4 +27,6 @@ public class PracticeExecution extends BaseEntity {
 
     @ManyToMany(fetch = FetchType.EAGER)
     private Set<Option> selectedAnswers;
+
+    private Long correctAnswers;
 }
