@@ -6,4 +6,5 @@ import lombok.Data;
 @Data
 public class CourseCategoryCreateDTO {
     private String categoryName;
+    private String userId;
 }

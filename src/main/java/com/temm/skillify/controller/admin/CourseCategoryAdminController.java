@@ -22,13 +22,17 @@ public class CourseCategoryAdminController {
     private final UserService userService;
     
     @GetMapping
-    public ResponseEntity<List<CourseCategoryResponseDTO>> getAllCategories() {
-        return ResponseEntity.ok(courseCategoryService.findAll());
+    public ResponseEntity<List<CourseCategoryResponseDTO>> getAllCategoriesByCurrentUser(Authentication authentication) {
+        userService.getUserFromAuthentication(authentication); // Verify admin is authenticated
+        return ResponseEntity.ok(courseCategoryService.findAllByCurrentUser());
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<CourseCategoryResponseDTO> getCategoryById(@PathVariable String id) {
-        return courseCategoryService.findById(id)
+    public ResponseEntity<CourseCategoryResponseDTO> getCategoryByIdAndCurrentUser(
+            @PathVariable String id,
+            Authentication authentication) {
+        userService.getUserFromAuthentication(authentication); // Verify admin is authenticated
+        return courseCategoryService.findByIdAndCurrentUser(id)
             .map(ResponseEntity::ok)
             .orElse(ResponseEntity.notFound().build());
     }
@@ -54,9 +58,11 @@ public class CourseCategoryAdminController {
     }
     
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCategory(@PathVariable String id, Authentication authentication) {
+    public ResponseEntity<Void> deleteCategory(
+            @PathVariable String id,
+            Authentication authentication) {
         userService.getUserFromAuthentication(authentication); // Verify admin is authenticated
-        if (courseCategoryService.findById(id).isPresent()) {
+        if (courseCategoryService.findByIdAndCurrentUser(id).isPresent()) {
             courseCategoryService.deleteById(id);
             return ResponseEntity.noContent().build();
         } else {

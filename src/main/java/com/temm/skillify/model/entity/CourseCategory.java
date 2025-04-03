@@ -17,4 +17,7 @@ import lombok.NoArgsConstructor;
 public class CourseCategory extends BaseEntity {
     
     private String categoryName;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    private User createdBy;
 }

@@ -7,4 +7,5 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class CourseCategoryResponseDTO extends BaseResponseDTO {
     private String categoryName;
+    private UserResponseDTO user;
 }
