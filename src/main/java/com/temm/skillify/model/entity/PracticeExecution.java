@@ -29,4 +29,6 @@ public class PracticeExecution extends BaseEntity {
     private Set<Option> selectedAnswers;
 
     private Long correctAnswers;
+
+    private Long duration;
 }

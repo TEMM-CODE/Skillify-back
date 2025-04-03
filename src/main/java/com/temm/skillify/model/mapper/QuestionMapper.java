@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 public class QuestionMapper {
     private final UserMapper userMapper;
     private final OptionMapper optionMapper;
+    private final CourseMapper courseMapper; // Added CourseMapper
     
     public QuestionResponseDTO toResponseDTO(Question entity) {
         if (entity == null) {
@@ -34,6 +35,10 @@ public class QuestionMapper {
             dto.setMentor(userMapper.toResponseDTO(entity.getMentor()));
         }
         
+        if (entity.getCourse() != null) {
+            dto.setCourse(courseMapper.toResponseDTO(entity.getCourse()));
+        }
+        
         if (entity.getOptions() != null && !entity.getOptions().isEmpty()) {
             dto.setOptions(entity.getOptions().stream()
                     .map(optionMapper::toResponseDTO)
@@ -42,7 +47,6 @@ public class QuestionMapper {
             dto.setOptions(new HashSet<>());
         }
         
-        // Only add superAdminTypes if present
         if (entity.getSuperAdminTypes() != null && !entity.getSuperAdminTypes().isEmpty()) {
             dto.setSuperAdminTypes(entity.getSuperAdminTypes());
         }
@@ -60,7 +64,6 @@ public class QuestionMapper {
         entity.setMentor(mentor);
         entity.setOptions(new HashSet<>());
         
-        // Only set superAdminTypes if present in DTO
         if (dto.getSuperAdminTypes() != null && !dto.getSuperAdminTypes().isEmpty()) {
             entity.setSuperAdminTypes(dto.getSuperAdminTypes());
         }

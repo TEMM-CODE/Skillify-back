@@ -28,6 +28,9 @@ public class Question extends BaseEntity {
     @ManyToOne(fetch = FetchType.EAGER)
     private User mentor;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    private Course course;
+
     @ElementCollection(targetClass = QuestionSuperAdminType.class)
     @Enumerated(EnumType.STRING)
     @CollectionTable(name = "question_super_admin_types", joinColumns = @JoinColumn(name = "question_id"))

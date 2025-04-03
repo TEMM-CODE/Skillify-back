@@ -14,4 +14,5 @@ import java.util.List;
 public interface PracticeRepository extends JpaRepository<Practice, String> {
     List<Practice> findByMentor(User mentor);
     List<Practice> findByClassroom(Classroom classroom);
+    List<Practice> findByClassroomIn(List<Classroom> classrooms);
 }

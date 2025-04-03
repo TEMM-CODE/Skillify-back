@@ -10,5 +10,6 @@ import lombok.Data;
 public class QuestionCreateDTO {
     private String title;
     private String mentorId;
+    private String courseId; // Added courseId
     private List<QuestionSuperAdminType> superAdminTypes;
 }

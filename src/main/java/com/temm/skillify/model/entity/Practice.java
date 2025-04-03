@@ -8,6 +8,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 import com.temm.skillify.model.categories.BaseEntity;
@@ -25,6 +26,9 @@ public class Practice extends BaseEntity implements Challengeable{
     
     @ManyToOne(fetch = FetchType.EAGER)
     private Classroom classroom;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    private List<Course> courses;
     
     private String title;
     private Integer numberOfQuestions;
@@ -34,4 +38,6 @@ public class Practice extends BaseEntity implements Challengeable{
     
     @ManyToMany(fetch = FetchType.EAGER)
     private Set<Question> questions;
+
+    private Integer numberOfAllowedAttempts;
 }
