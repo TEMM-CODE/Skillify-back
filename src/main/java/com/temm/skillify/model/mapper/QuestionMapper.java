@@ -9,6 +9,7 @@ import com.temm.skillify.model.enums.QuestionSuperAdminType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,8 +19,9 @@ import java.util.stream.Collectors;
 public class QuestionMapper {
     private final UserMapper userMapper;
     private final OptionMapper optionMapper;
-    private final CourseMapper courseMapper; // Added CourseMapper
-    
+    private final CourseMapper courseMapper;
+    private final QuestionContentMapper questionContentMapper; // Added dependency
+
     public QuestionResponseDTO toResponseDTO(Question entity) {
         if (entity == null) {
             return null;
@@ -51,6 +53,14 @@ public class QuestionMapper {
             dto.setSuperAdminTypes(entity.getSuperAdminTypes());
         }
         
+        if (entity.getContent() != null && !entity.getContent().isEmpty()) {
+            dto.setContent(entity.getContent().stream()
+                    .map(questionContentMapper::toResponseDTO)
+                    .collect(Collectors.toList()));
+        } else {
+            dto.setContent(new ArrayList<>());
+        }
+
         return dto;
     }
     

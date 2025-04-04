@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -30,6 +31,10 @@ public class Question extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.EAGER)
     private Course course;
+
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("position ASC") // Ensures ordering
+    private List<QuestionContent> content = new ArrayList<>();
 
     @ElementCollection(targetClass = QuestionSuperAdminType.class)
     @Enumerated(EnumType.STRING)

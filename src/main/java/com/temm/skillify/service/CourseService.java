@@ -3,10 +3,12 @@ package com.temm.skillify.service;
 
 import com.temm.skillify.model.dto.request.CourseCreateDTO;
 import com.temm.skillify.model.dto.response.CourseResponseDTO;
+import com.temm.skillify.model.entity.Classroom;
 import com.temm.skillify.model.entity.Course;
 import com.temm.skillify.model.entity.CourseCategory;
 import com.temm.skillify.model.entity.User;
 import com.temm.skillify.model.mapper.CourseMapper;
+import com.temm.skillify.repository.ClassroomRepository;
 import com.temm.skillify.repository.CourseCategoryRepository;
 import com.temm.skillify.repository.CourseRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,14 +33,24 @@ public class CourseService {
     @Autowired
     private CourseMapper courseMapper;
 
-    public List<CourseResponseDTO> getAllCoursesByCurrentMentor() {
-        User currentUser = getCurrentUser();
-        List<Course> courses = courseRepository.findByCreator(currentUser);
-        return courses.stream()
-                .map(courseMapper::toResponseDTO)
-                .collect(Collectors.toList());
-    }
+    @Autowired
+    private ClassroomRepository classroomRepository;
 
+public Set<CourseResponseDTO> getAllCoursesByCurrentMentor() {
+    User currentUser = getCurrentUser();
+    
+    // Get all classrooms where current user is the mentor
+    List<Classroom> classrooms = classroomRepository.findByMentor(currentUser);
+    
+    // Collect all courses from these classrooms into a set (to avoid duplicates)
+    Set<Course> courses = classrooms.stream()
+            .flatMap(classroom -> classroom.getCourses().stream())
+            .collect(Collectors.toSet());
+    
+    return courses.stream()
+            .map(courseMapper::toResponseDTO)
+            .collect(Collectors.toSet());
+}
     public CourseResponseDTO getCourseById(String id) {
         Course course = findCourseAndValidateAccess(id);
         return courseMapper.toResponseDTO(course);

@@ -14,6 +14,7 @@ public class QuestionResponseDTO extends BaseResponseDTO {
     private String title;
     private Set<OptionResponseDTO> options;
     private UserResponseDTO mentor;
-    private CourseResponseDTO course; // Added course
+    private CourseResponseDTO course;
     private List<QuestionSuperAdminType> superAdminTypes;
+    private List<QuestionContentReturnDTO> content; // Added content list
 }

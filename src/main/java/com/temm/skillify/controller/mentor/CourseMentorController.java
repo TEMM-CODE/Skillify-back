@@ -11,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/mentor/courses")
@@ -22,7 +23,7 @@ public class CourseMentorController {
 
 
     @GetMapping
-    public ResponseEntity<List<CourseResponseDTO>> getAllCoursesByMentor() {
+    public ResponseEntity<Set<CourseResponseDTO>> getAllCoursesByMentor() {
         return ResponseEntity.ok(courseMentorService.getAllCoursesByCurrentMentor());
     }
 

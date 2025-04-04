@@ -1,5 +1,6 @@
 package com.temm.skillify.controller.mentor;
 
+import com.temm.skillify.model.dto.request.QuestionContentCreateDTO;
 import com.temm.skillify.model.dto.request.QuestionCreateDTO;
 import com.temm.skillify.model.dto.response.QuestionResponseDTO;
 import com.temm.skillify.model.entity.Option;
@@ -64,7 +65,7 @@ public class QuestionMentorController {
             @PathVariable String questionId,
             @PathVariable String optionId,
             @RequestBody Option option,
-            Authentication authentication) {
+            @RequestBody Authentication authentication) {
         return ResponseEntity.ok(questionService.updateOption(questionId, optionId, option, authentication));
     }
 
@@ -79,5 +80,13 @@ public class QuestionMentorController {
     @GetMapping("/superadmin")
     public ResponseEntity<List<QuestionResponseDTO>> getSuperAdminQuestions(Authentication authentication) {
         return ResponseEntity.ok(questionService.findAllBySuperAdmin(authentication));
+    }
+
+    @PutMapping("/{id}/content")
+    public ResponseEntity<QuestionResponseDTO> updateQuestionContent(
+            @PathVariable("id") String questionId,
+            @RequestBody List<QuestionContentCreateDTO> contentDTOs,
+            Authentication authentication) {
+        return ResponseEntity.ok(questionService.updateQuestionContent(questionId, contentDTOs, authentication));
     }
 }

@@ -1,24 +1,31 @@
 package com.temm.skillify.service;
 
+import com.temm.skillify.model.dto.request.QuestionContentCreateDTO;
 import com.temm.skillify.model.dto.request.QuestionCreateDTO;
 import com.temm.skillify.model.dto.response.QuestionResponseDTO;
 import com.temm.skillify.model.entity.Course;
 import com.temm.skillify.model.entity.Option;
 import com.temm.skillify.model.entity.Question;
+import com.temm.skillify.model.entity.QuestionContent;
 import com.temm.skillify.model.entity.User;
 import com.temm.skillify.model.enums.UserRole;
+import com.temm.skillify.model.mapper.QuestionContentMapper;
 import com.temm.skillify.model.mapper.QuestionMapper;
 import com.temm.skillify.repository.CourseRepository;
 import com.temm.skillify.repository.OptionRepository;
+import com.temm.skillify.repository.QuestionContentRepository;
 import com.temm.skillify.repository.QuestionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import jakarta.persistence.EntityNotFoundException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,6 +37,8 @@ public class QuestionService {
     private final UserService userService;
     private final CourseRepository courseRepository;
     private final QuestionMapper questionMapper;
+    private final QuestionContentRepository questionContentRepository;
+    private final QuestionContentMapper questionContentMapper;
 
     public List<QuestionResponseDTO> findAllByMentor(Authentication authentication) {
         User mentor = userService.getUserFromAuthentication(authentication);
@@ -40,16 +49,11 @@ public class QuestionService {
     }
 
     public List<QuestionResponseDTO> findAllBySuperAdmin(Authentication authentication) {
-        // Ensure user is authenticated
         User currentUser = userService.getUserFromAuthentication(authentication);
-        
-        // Find all questions where the mentor has SUPERADMIN role
         List<Question> superAdminQuestions = questionRepository.findAll().stream()
                 .filter(question -> question.getMentor() != null && 
                               question.getMentor().getRole() == UserRole.SUPERADMIN)
                 .collect(Collectors.toList());
-        
-        // Convert to DTOs and return
         return superAdminQuestions.stream()
                 .map(questionMapper::toResponseDTO)
                 .collect(Collectors.toList());
@@ -71,14 +75,12 @@ public class QuestionService {
         question.setMentor(mentor);
         question.setOptions(new HashSet<>());
         
-        // Check and set course if provided
         if (questionDTO.getCourseId() != null && !questionDTO.getCourseId().isEmpty()) {
             Course course = courseRepository.findById(questionDTO.getCourseId())
                 .orElseThrow(() -> new EntityNotFoundException("Course not found with id: " + questionDTO.getCourseId()));
             question.setCourse(course);
         }
         
-        // Set superAdminTypes if present
         if (questionDTO.getSuperAdminTypes() != null && !questionDTO.getSuperAdminTypes().isEmpty()) {
             question.setSuperAdminTypes(questionDTO.getSuperAdminTypes());
         }
@@ -96,16 +98,14 @@ public class QuestionService {
         
         question.setTitle(questionDTO.getTitle());
         
-        // Update course if provided
         if (questionDTO.getCourseId() != null && !questionDTO.getCourseId().isEmpty()) {
             Course course = courseRepository.findById(questionDTO.getCourseId())
                 .orElseThrow(() -> new EntityNotFoundException("Course not found with id: " + questionDTO.getCourseId()));
             question.setCourse(course);
         } else {
-            question.setCourse(null); // Allow removing course by sending null/empty courseId
+            question.setCourse(null);
         }
         
-        // Update superAdminTypes if present
         if (questionDTO.getSuperAdminTypes() != null) {
             question.setSuperAdminTypes(questionDTO.getSuperAdminTypes());
         }
@@ -121,7 +121,6 @@ public class QuestionService {
                 .filter(q -> q.getMentor().getId().equals(mentor.getId()))
                 .orElseThrow(() -> new EntityNotFoundException("Question not found or you don't have permission"));
         
-        // Delete all options associated with this question
         List<Option> options = optionRepository.findByQuestion(question);
         optionRepository.deleteAll(options);
         
@@ -139,7 +138,6 @@ public class QuestionService {
             optionRepository.save(option);
         }
         
-        // Refresh the question to get the updated options
         Question updatedQuestion = questionRepository.findById(questionId).orElseThrow();
         return questionMapper.toResponseDTO(updatedQuestion);
     }
@@ -160,7 +158,6 @@ public class QuestionService {
         
         optionRepository.save(option);
         
-        // Refresh the question to get the updated options
         Question refreshedQuestion = questionRepository.findById(questionId).orElseThrow();
         return questionMapper.toResponseDTO(refreshedQuestion);
     }
@@ -178,8 +175,49 @@ public class QuestionService {
         
         optionRepository.delete(option);
         
-        // Refresh the question to get the updated options
         Question refreshedQuestion = questionRepository.findById(questionId).orElseThrow();
         return questionMapper.toResponseDTO(refreshedQuestion);
+    }
+
+    public QuestionResponseDTO updateQuestionContent(String questionId, List<QuestionContentCreateDTO> contentDTOs, Authentication authentication) {
+        User mentor = userService.getUserFromAuthentication(authentication);
+        
+        // Fetch the question and verify ownership
+        Question question = questionRepository.findById(questionId)
+                .filter(q -> q.getMentor().getId().equals(mentor.getId()))
+                .orElseThrow(() -> new EntityNotFoundException("Question not found or you don't have permission"));
+
+        // Get existing content
+        List<QuestionContent> existingContent = question.getContent();
+        
+        // Create a map of existing content by position for easier lookup
+        Map<Integer, QuestionContent> existingContentMap = existingContent.stream()
+                .collect(Collectors.toMap(QuestionContent::getPosition, Function.identity()));
+
+        // New content list to replace the old one
+        List<QuestionContent> updatedContent = new ArrayList<>();
+
+        // Process each DTO
+        for (QuestionContentCreateDTO dto : contentDTOs) {
+            QuestionContent content;
+            if (existingContentMap.containsKey(dto.getPosition())) {
+                // Update existing content
+                content = existingContentMap.get(dto.getPosition());
+                content.setType(dto.getType());
+                content.setValue(dto.getValue());
+            } else {
+                // Create new content
+                content = questionContentMapper.toEntity(dto, question);
+            }
+            updatedContent.add(content);
+        }
+
+        // Remove content that is no longer in the DTO list (orphan removal will handle deletion)
+        existingContent.clear();
+        existingContent.addAll(updatedContent);
+
+        // Save the updated question (cascade will handle content persistence)
+        Question updatedQuestion = questionRepository.save(question);
+        return questionMapper.toResponseDTO(updatedQuestion);
     }
 }
