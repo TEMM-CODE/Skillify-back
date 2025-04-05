@@ -3,13 +3,28 @@ package com.temm.skillify.service;
 
 import com.temm.skillify.model.dto.response.*;
 import com.temm.skillify.model.entity.*;
+import com.temm.skillify.model.mapper.CourseMapper;
+import com.temm.skillify.model.mapper.QuestionContentMapper;
+import com.temm.skillify.model.mapper.QuestionMapper;
+
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class MappingService {
+
+    @Autowired
+    private QuestionContentMapper questionContentMapper; 
+
+        private final QuestionMapper questionMapper;
+    private final CourseMapper courseMapper; 
     
     public UserResponseDTO mapToUserResponseDTO(User user) {
         UserResponseDTO dto = new UserResponseDTO();
@@ -57,6 +72,13 @@ public class MappingService {
         dto.setMentor(mapToUserResponseDTO(question.getMentor()));
         dto.setCreatedAt(question.getCreatedAt());
         dto.setUpdatedAt(question.getUpdatedAt());
+        if (question.getContent() != null && !question.getContent().isEmpty()) {
+            dto.setContent(question.getContent().stream()
+                    .map(questionContentMapper::toResponseDTO)
+                    .collect(Collectors.toList()));
+        } else {
+            dto.setContent(new ArrayList<>());
+        }
         return dto;
     }
     
@@ -71,11 +93,17 @@ public class MappingService {
         dto.setOpeningDate(practice.getOpeningDate());
         dto.setMaximumDate(practice.getMaximumDate());
         
-        Set<QuestionResponseDTO> questionDTOs = practice.getQuestions().stream()
-                .map(this::mapToQuestionResponseDTO)
-                .collect(Collectors.toSet());
+        if (practice.getCourses() != null && !practice.getCourses().isEmpty()) {
+            dto.setCourses(practice.getCourses().stream()
+                .map(courseMapper::toResponseDTO)
+                .collect(Collectors.toList()));
+        }
         
-        dto.setQuestions(questionDTOs);
+        if (practice.getQuestions() != null && !practice.getQuestions().isEmpty()) {
+            dto.setQuestions(practice.getQuestions().stream()
+                .map(questionMapper::toResponseDTO)
+                .collect(Collectors.toSet()));
+        }
         dto.setCreatedAt(practice.getCreatedAt());
         dto.setUpdatedAt(practice.getUpdatedAt());
         return dto;
