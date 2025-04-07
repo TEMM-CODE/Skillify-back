@@ -119,6 +119,19 @@ public class TutorSessionService {
         return tutorSessionMapper.toResponseDTO(sessionRepository.save(session));
     }
 
+    public TutorSessionResponseDTO createFromStudent(TutorSessionCreateDTO dto) {
+
+        TutorSession session = tutorSessionMapper.toEntity(dto);
+        User mentor = userService.findById(dto.getMentorId()).orElseThrow();
+        session.setMentor(mentor);
+        // If dateHour is set but date is not, extract date from dateHour
+        if (session.getDateHour() != null && session.getDate() == null) {
+            session.setDate(session.getDateHour().toLocalDate());
+        }
+        
+        return tutorSessionMapper.toResponseDTO(sessionRepository.save(session));
+    }
+
     public TutorSessionResponseDTO update(String id, TutorSessionCreateDTO dto, Authentication authentication) {
         User mentor = userService.getUserFromAuthentication(authentication);
         

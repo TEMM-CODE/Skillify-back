@@ -62,7 +62,7 @@ public class TutorSessionStudentController {
         }
         
         // Create the session using the service
-        TutorSessionResponseDTO createdSession = sessionService.create(sessionDTO, authentication);
+        TutorSessionResponseDTO createdSession = sessionService.createFromStudent(sessionDTO);
         return ResponseEntity.ok(createdSession);
     }
 }
