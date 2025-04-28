@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.temm.skillify.model.categories.BaseEntity;
@@ -30,4 +31,8 @@ public class CourseLesson extends BaseEntity {
     
     private String name;
     private Integer duration; // in minutes
+
+    @OneToMany(mappedBy = "courseLesson", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("position ASC") // Ensures ordering
+    private List<CourseLessonContent> content = new ArrayList<>();
 }

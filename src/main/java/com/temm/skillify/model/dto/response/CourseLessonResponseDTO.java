@@ -1,4 +1,5 @@
 package com.temm.skillify.model.dto.response;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import java.util.List;
@@ -12,4 +13,5 @@ public class CourseLessonResponseDTO extends BaseResponseDTO {
     private List<String> files;
     private String name;
     private Integer duration;
+    private List<CourseLessonContentResponseDTO> content; // Added content list
 }

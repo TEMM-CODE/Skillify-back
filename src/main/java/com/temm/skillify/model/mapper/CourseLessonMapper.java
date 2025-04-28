@@ -1,12 +1,11 @@
 package com.temm.skillify.model.mapper;
 
-
-
 import com.temm.skillify.model.dto.response.CourseCategoryResponseDTO;
 import com.temm.skillify.model.dto.response.CourseLessonCategoryResponseDTO;
 import com.temm.skillify.model.dto.response.CourseLessonResponseDTO;
 import com.temm.skillify.model.dto.response.CourseResponseDTO;
 import com.temm.skillify.model.dto.response.UserResponseDTO;
+import com.temm.skillify.model.dto.response.CourseLessonContentResponseDTO;
 import com.temm.skillify.model.entity.CourseLesson;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +13,13 @@ import java.util.stream.Collectors;
 
 @Component
 public class CourseLessonMapper {
+
+    private final CourseLessonContentMapper courseLessonContentMapper;
+
+    // Constructor injection
+    public CourseLessonMapper(CourseLessonContentMapper courseLessonContentMapper) {
+        this.courseLessonContentMapper = courseLessonContentMapper;
+    }
 
     public CourseLessonResponseDTO toResponseDTO(CourseLesson entity) {
         if (entity == null) {
@@ -70,8 +76,6 @@ public class CourseLessonMapper {
             categoryDTO.setId(entity.getCourseLessonCategory().getId());
             categoryDTO.setName(entity.getCourseLessonCategory().getName());
             
-            // You might want to set the course here too, but be careful of infinite recursion
-            // A simplified course representation could be used
             if (entity.getCourseLessonCategory().getCourse() != null) {
                 CourseResponseDTO simpleCourseDTO = new CourseResponseDTO();
                 simpleCourseDTO.setId(entity.getCourseLessonCategory().getCourse().getId());
@@ -82,6 +86,12 @@ public class CourseLessonMapper {
             dto.setCourseLessonCategory(categoryDTO);
         }
         
+        // Set content list if available
+        if (entity.getContent() != null && !entity.getContent().isEmpty()) {
+            dto.setContent(entity.getContent().stream()
+                .map(courseLessonContentMapper::toResponseDTO)
+                .collect(Collectors.toList()));
+        }
         
         return dto;
     }

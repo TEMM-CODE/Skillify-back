@@ -52,7 +52,7 @@ public Set<CourseResponseDTO> getAllCoursesByCurrentMentor() {
             .collect(Collectors.toSet());
 }
     public CourseResponseDTO getCourseById(String id) {
-        Course course = findCourseAndValidateAccess(id);
+        Course course = findCourseAndValidateAccessMentor(id);
         return courseMapper.toResponseDTO(course);
     }
 
@@ -76,7 +76,7 @@ public Set<CourseResponseDTO> getAllCoursesByCurrentMentor() {
     }
 
     public CourseResponseDTO updateCourse(String id, CourseCreateDTO courseUpdateDTO) {
-        Course existingCourse = findCourseAndValidateAccess(id);
+        Course existingCourse = findCourseAndValidateAccessMentor(id);
         
         // Update course fields from DTO
         courseMapper.updateEntityFromDTO(existingCourse, courseUpdateDTO);
@@ -105,6 +105,24 @@ public Set<CourseResponseDTO> getAllCoursesByCurrentMentor() {
         
         User currentUser = getCurrentUser();
         if (!course.getCreator().getId().equals(currentUser.getId())) {
+            throw new SecurityException("You don't have permission to access this course");
+        }
+        
+        return course;
+    }
+
+    private Course findCourseAndValidateAccessMentor(String courseId) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new NoSuchElementException("Course not found with id: " + courseId));
+        
+        User currentUser = getCurrentUser();
+        
+        // Check if the course exists in any of the mentor's classrooms
+        boolean hasAccess = classroomRepository.findByMentor(currentUser).stream()
+                .flatMap(classroom -> classroom.getCourses().stream())
+                .anyMatch(c -> c.getId().equals(courseId));
+        
+        if (!hasAccess) {
             throw new SecurityException("You don't have permission to access this course");
         }
         
