@@ -2,7 +2,8 @@ package com.temm.skillify.model.enums;
 
 public enum CourseLessonContentType {
     TEXT("text"),
-    IMAGE("image");
+    IMAGE("image"),
+    VIDEO("video");
 
     private final String value;
 

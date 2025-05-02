@@ -2,6 +2,7 @@ package com.temm.skillify.service;
 
 import com.temm.skillify.model.dto.response.*;
 import com.temm.skillify.model.entity.*;
+import com.temm.skillify.model.mapper.CourseLessonContentMapper;
 import com.temm.skillify.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class CourseStudentService {
     private final CourseLessonRepository courseLessonRepository;
     private final UserService userService;
     private final ClassroomRepository classroomRepository;
+    private final CourseLessonContentMapper courseLessonContentMapper;
 
     public List<CourseResponseDTO> getAllCourses() {
         List<Course> courses = courseRepository.findAll();
@@ -120,32 +122,78 @@ public class CourseStudentService {
         return dto;
     }
 
-    private CourseLessonResponseDTO mapToCourseLessonResponseDTO(CourseLesson lesson) {
-        CourseLessonResponseDTO dto = new CourseLessonResponseDTO();
-        dto.setId(lesson.getId());
-        dto.setName(lesson.getName());
-        dto.setDuration(lesson.getDuration());
-        dto.setFiles(lesson.getFiles());
-        dto.setCreatedAt(lesson.getCreatedAt());
-        dto.setUpdatedAt(lesson.getUpdatedAt());
-        
-        // Map course information
-        CourseResponseDTO courseDTO = new CourseResponseDTO();
-        courseDTO.setId(lesson.getCourse().getId());
-        courseDTO.setName(lesson.getCourse().getName());
-        dto.setCourse(courseDTO);
-        
-        // Map category information if available
-        if (lesson.getCourseLessonCategory() != null) {
-            CourseLessonCategoryResponseDTO categoryDTO = new CourseLessonCategoryResponseDTO();
-            categoryDTO.setId(lesson.getCourseLessonCategory().getId());
-            categoryDTO.setName(lesson.getCourseLessonCategory().getName());
-            dto.setCourseLessonCategory(categoryDTO);
+    private CourseLessonResponseDTO mapToCourseLessonResponseDTO(CourseLesson entity) {
+            if (entity == null) {
+                return null;
+            }
+            
+            CourseLessonResponseDTO dto = new CourseLessonResponseDTO();
+            
+            // Set base fields
+            dto.setId(entity.getId());
+            dto.setName(entity.getName());
+            dto.setDuration(entity.getDuration());
+            dto.setFiles(entity.getFiles());
+            
+            // Set course if available
+            if (entity.getCourse() != null) {
+                CourseResponseDTO courseDTO = new CourseResponseDTO();
+                courseDTO.setId(entity.getCourse().getId());
+                courseDTO.setName(entity.getCourse().getName());
+                courseDTO.setDescription(entity.getCourse().getDescription());
+                courseDTO.setLevel(entity.getCourse().getLevel());
+                courseDTO.setDuration(entity.getCourse().getDuration());
+                courseDTO.setImageUrl(entity.getCourse().getImageUrl());
+                
+                // Set creator if available
+                if (entity.getCourse().getCreator() != null) {
+                    UserResponseDTO creatorDTO = new UserResponseDTO();
+                    creatorDTO.setId(entity.getCourse().getCreator().getId());
+                    creatorDTO.setName(entity.getCourse().getCreator().getName());
+                    creatorDTO.setEmail(entity.getCourse().getCreator().getEmail());
+                    creatorDTO.setRole(entity.getCourse().getCreator().getRole());
+                    
+                    courseDTO.setCreator(creatorDTO);
+                }
+                
+                // Set categories if available
+                if (entity.getCourse().getCategories() != null) {
+                    courseDTO.setCategories(entity.getCourse().getCategories().stream()
+                            .map(category -> {
+                                CourseCategoryResponseDTO categoryDTO = new CourseCategoryResponseDTO();
+                                categoryDTO.setId(category.getId());
+                                categoryDTO.setCategoryName(category.getCategoryName());
+                                return categoryDTO;
+                            })
+                            .collect(Collectors.toSet()));
+                }
+                
+                dto.setCourse(courseDTO);
+            }
+            
+            // Set course lesson category if available
+            if (entity.getCourseLessonCategory() != null) {
+                CourseLessonCategoryResponseDTO categoryDTO = new CourseLessonCategoryResponseDTO();
+                categoryDTO.setId(entity.getCourseLessonCategory().getId());
+                categoryDTO.setName(entity.getCourseLessonCategory().getName());
+                
+                if (entity.getCourseLessonCategory().getCourse() != null) {
+                    CourseResponseDTO simpleCourseDTO = new CourseResponseDTO();
+                    simpleCourseDTO.setId(entity.getCourseLessonCategory().getCourse().getId());
+                    simpleCourseDTO.setName(entity.getCourseLessonCategory().getCourse().getName());
+                    categoryDTO.setCourse(simpleCourseDTO);
+                }
+                
+                dto.setCourseLessonCategory(categoryDTO);
+            }
+            
+            // Set content list if available
+            if (entity.getContent() != null && !entity.getContent().isEmpty()) {
+                dto.setContent(entity.getContent().stream()
+                    .map(courseLessonContentMapper::toResponseDTO)
+                    .collect(Collectors.toList()));
+            }
+            
+            return dto;
         }
-        
-        // Map classroom information if available
-
-        
-        return dto;
-    }
 }
