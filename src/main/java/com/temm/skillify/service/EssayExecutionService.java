@@ -8,12 +8,21 @@ import org.springframework.stereotype.Service;
 
 import com.temm.skillify.model.dto.request.EssayExecutionCreateDTO;
 import com.temm.skillify.model.dto.response.EssayExecutionResponseDTO;
+import com.temm.skillify.model.entity.Classroom;
 import com.temm.skillify.model.entity.EssayExecution;
+import com.temm.skillify.model.entity.Goal;
+import com.temm.skillify.model.entity.GoalExecution;
 import com.temm.skillify.model.entity.User;
+import com.temm.skillify.model.enums.GoalType;
 import com.temm.skillify.model.mapper.EssayExecutionMapper;
+import com.temm.skillify.repository.ClassroomRepository;
 import com.temm.skillify.repository.EssayExecutionRepository;
 import com.temm.skillify.repository.EssayRepository;
+import com.temm.skillify.repository.GoalExecutionRepository;
+import com.temm.skillify.repository.GoalRepository;
 
+import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -25,6 +34,9 @@ public class EssayExecutionService {
     private final EssayExecutionMapper essayExecutionMapper;
     private final UserService userService;
     private final EssayRepository essayRepository;
+    private final GoalRepository goalRepository;
+    private final GoalExecutionRepository goalExecutionRepository;
+    private final ClassroomRepository classroomRepository;
 
     public List<EssayExecutionResponseDTO> findAllDTOs() {
         List<EssayExecution> executions = essayExecutionRepository.findAll();
@@ -56,8 +68,8 @@ public class EssayExecutionService {
         return essayExecutionMapper.toResponseDTO(savedExecution);
     }
 
+   
     public EssayExecutionResponseDTO saveForStudent(EssayExecutionCreateDTO createDTO) {
-
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User student = (User) authentication.getPrincipal();
 
@@ -65,14 +77,65 @@ public class EssayExecutionService {
         EssayExecution essayExecution = new EssayExecution();
         essayExecution.setStudent(student);
         essayExecution.setText(createDTO.getText());
-        
+
         // Set essay
         if (createDTO.getEssayId() != null) {
             essayExecution.setEssay(essayRepository.findById(createDTO.getEssayId())
-                .orElseThrow(() -> new RuntimeException("Essay not found")));
+                    .orElseThrow(() -> new RuntimeException("Essay not found")));
         }
-        
+
+        // Save the essay execution
         EssayExecution savedExecution = essayExecutionRepository.save(essayExecution);
+
+        // 1) Find active (non-expired) goals by student
+        LocalDateTime now = LocalDateTime.now();
+        List<Classroom> studentClassrooms = classroomRepository.findByStudentsContaining(student);
+        List<Goal> activeGoals = goalRepository.findByClassroomsInAndFinalDateAfter(
+                studentClassrooms, now);
+
+        // 2) Filter by type ESSAY
+        List<Goal> essayGoals = activeGoals.stream()
+                .filter(goal -> goal.getType() == GoalType.ESSAY)
+                .collect(Collectors.toList());
+
+        // Process each essay goal
+        for (Goal goal : essayGoals) {
+            // 3) Find essay executions done during the goal's time period, one per distinct essay
+            List<EssayExecution> relevantExecutions = essayExecutionRepository.findByStudent(student).stream()
+                    .filter(execution -> execution.getEssay().getClassroom().getId().equals(
+                            goal.getClassrooms().stream().map(Classroom::getId).collect(Collectors.toList()).get(0)))
+                    .filter(execution -> execution.getCreatedAt().isAfter(goal.getOpeningDate())
+                            && execution.getCreatedAt().isBefore(goal.getFinalDate()))
+                    // Group by Essay and select the most recent execution
+                    .collect(Collectors.groupingBy(
+                            execution -> execution.getEssay(),
+                            Collectors.maxBy(Comparator.comparing(EssayExecution::getCreatedAt))
+                    ))
+                    .values()
+                    .stream()
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .collect(Collectors.toList());
+
+            // 4) Check if a goal execution already exists
+            GoalExecution goalExecution = goalExecutionRepository.findByGoalAndStudent(goal, student)
+                    .orElse(null);
+
+            if (goalExecution == null) {
+                // 5) Create new goal execution if it doesn't exist
+                goalExecution = new GoalExecution();
+                goalExecution.setGoal(goal);
+                goalExecution.setStudent(student);
+                // Set amount to the number of unique essay executions
+                goalExecution.setAmount(relevantExecutions.size());
+                goalExecutionRepository.save(goalExecution);
+            } else {
+                // 6) Update existing goal execution
+                goalExecution.setAmount(goalExecution.getAmount() + 1);
+                goalExecutionRepository.save(goalExecution);
+            }
+        }
+
         return essayExecutionMapper.toResponseDTO(savedExecution);
     }
     

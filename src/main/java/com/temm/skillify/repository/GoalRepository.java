@@ -18,4 +18,5 @@ public interface GoalRepository extends JpaRepository<Goal, String> {
     List<Goal> findByType(GoalType type);
     List<Goal> findByOpeningDateBeforeAndFinalDateAfter(LocalDateTime currentDate, LocalDateTime currentDate2);
     List<Goal> findByFinalDateBefore(LocalDateTime date);
+    List<Goal> findByClassroomsInAndFinalDateAfter(List<Classroom> classrooms, LocalDateTime date);
 }

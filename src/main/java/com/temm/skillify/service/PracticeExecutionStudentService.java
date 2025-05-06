@@ -2,11 +2,18 @@ package com.temm.skillify.service;
 
 import com.temm.skillify.model.dto.request.PracticeExecutionCreateDTO;
 import com.temm.skillify.model.dto.response.PracticeExecutionResponseDTO;
+import com.temm.skillify.model.entity.Classroom;
+import com.temm.skillify.model.entity.Goal;
+import com.temm.skillify.model.entity.GoalExecution;
 import com.temm.skillify.model.entity.Practice;
 import com.temm.skillify.model.entity.PracticeExecution;
 import com.temm.skillify.model.entity.User;
+import com.temm.skillify.model.enums.GoalType;
 import com.temm.skillify.model.enums.UserRole;
 import com.temm.skillify.model.mapper.PracticeExecutionMapper;
+import com.temm.skillify.repository.ClassroomRepository;
+import com.temm.skillify.repository.GoalExecutionRepository;
+import com.temm.skillify.repository.GoalRepository;
 import com.temm.skillify.repository.PracticeExecutionRepository;
 import com.temm.skillify.repository.PracticeRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,17 +22,24 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class PracticeExecutionStudentService {
 
     private final PracticeExecutionRepository practiceExecutionRepository;
-    private final PracticeRepository practiceRepository;  // Added new dependency
+    private final PracticeRepository practiceRepository;
     private final PracticeExecutionMapper practiceExecutionMapper;
     private final UserService userService;
+    private final GoalRepository goalRepository;
+    private final GoalExecutionRepository goalExecutionRepository;
+    private final ClassroomRepository classroomRepository;
 
     // Get current authenticated student
     private User getCurrentUser() {
@@ -80,21 +94,71 @@ public class PracticeExecutionStudentService {
 
         // Get the Practice entity
         Practice practice = practiceRepository.findById(createDTO.getPracticeId())
-            .orElseThrow(() -> new RuntimeException("Practice not found with id: " + createDTO.getPracticeId()));
+                .orElseThrow(() -> new RuntimeException("Practice not found with id: " + createDTO.getPracticeId()));
 
         // Count existing executions for this student and practice
         long existingExecutionsCount = practiceExecutionRepository
-            .countByStudentIdAndPracticeId(currentStudent.getId(), createDTO.getPracticeId());
+                .countByStudentIdAndPracticeId(currentStudent.getId(), createDTO.getPracticeId());
 
         // Check if numberOfAllowedAttempts is null (unlimited) or if we're within the limit
         Integer allowedAttempts = practice.getNumberOfAllowedAttempts();
         if (allowedAttempts != null && existingExecutionsCount >= allowedAttempts) {
             throw new IllegalStateException(
-                "Maximum number of attempts (" + allowedAttempts + ") reached for this practice");
+                    "Maximum number of attempts (" + allowedAttempts + ") reached for this practice");
         }
 
         PracticeExecution execution = practiceExecutionMapper.toEntity(createDTO);
         PracticeExecution savedExecution = practiceExecutionRepository.save(execution);
+
+        // 1) Find active (non-expired) goals by student
+        LocalDateTime now = LocalDateTime.now();
+        List<Classroom> studentClassrooms = classroomRepository.findByStudentsContaining(currentStudent);
+        List<Goal> activeGoals = goalRepository.findByClassroomsInAndFinalDateAfter(
+                studentClassrooms, now);
+
+        // 2) Filter by type QUESTION
+        List<Goal> questionGoals = activeGoals.stream()
+                .filter(goal -> goal.getType() == GoalType.QUESTION)
+                .collect(Collectors.toList());
+
+        // Process each question goal
+        for (Goal goal : questionGoals) {
+            // 3) Find practice executions done during the goal's time period, one per distinct practice
+            List<PracticeExecution> relevantExecutions = practiceExecutionRepository.findByStudentId(currentStudent.getId()).stream()
+                    .filter(exec -> exec.getPractice().getClassroom().getId().equals(
+                            goal.getClassrooms().stream().map(Classroom::getId).collect(Collectors.toList()).get(0)))
+                    .filter(exec -> exec.getCreatedAt().isAfter(goal.getOpeningDate())
+                            && exec.getCreatedAt().isBefore(goal.getFinalDate()))
+                    // Group by Practice and select the most recent execution
+                    .collect(Collectors.groupingBy(
+                            exec -> exec.getPractice(),
+                            Collectors.maxBy(Comparator.comparing(PracticeExecution::getCreatedAt))
+                    ))
+                    .values()
+                    .stream()
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .collect(Collectors.toList());
+
+            // 4) Check if a goal execution already exists
+            GoalExecution goalExecution = goalExecutionRepository.findByGoalAndStudent(goal, currentStudent)
+                    .orElse(null);
+
+            if (goalExecution == null) {
+                // 5) Create new goal execution if it doesn't exist
+                goalExecution = new GoalExecution();
+                goalExecution.setGoal(goal);
+                goalExecution.setStudent(currentStudent);
+                // Set amount to the number of unique practice executions
+                goalExecution.setAmount(relevantExecutions.size());
+                goalExecutionRepository.save(goalExecution);
+            } else {
+                // 6) Update existing goal execution
+                goalExecution.setAmount(goalExecution.getAmount() + 1);
+                goalExecutionRepository.save(goalExecution);
+            }
+        }
+
         return practiceExecutionMapper.toResponseDTO(savedExecution);
     }
 
