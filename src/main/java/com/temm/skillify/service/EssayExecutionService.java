@@ -92,6 +92,7 @@ public class EssayExecutionService {
         List<Classroom> studentClassrooms = classroomRepository.findByStudentsContaining(student);
         List<Goal> activeGoals = goalRepository.findByClassroomsInAndFinalDateAfter(
                 studentClassrooms, now);
+        System.out.println("Nao tem metas" + activeGoals.isEmpty());
 
         // 2) Filter by type ESSAY
         List<Goal> essayGoals = activeGoals.stream()
@@ -128,10 +129,12 @@ public class EssayExecutionService {
                 goalExecution.setStudent(student);
                 // Set amount to the number of unique essay executions
                 goalExecution.setAmount(relevantExecutions.size());
+                System.out.println("Goal execution " + goalExecution.getCreatedAt());
                 goalExecutionRepository.save(goalExecution);
             } else {
                 // 6) Update existing goal execution
                 goalExecution.setAmount(goalExecution.getAmount() + 1);
+                System.out.println("Goal execution " + goalExecution.getCreatedAt());
                 goalExecutionRepository.save(goalExecution);
             }
         }
