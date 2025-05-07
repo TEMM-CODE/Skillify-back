@@ -37,6 +37,7 @@ public class EssayExecutionService {
     private final GoalRepository goalRepository;
     private final GoalExecutionRepository goalExecutionRepository;
     private final ClassroomRepository classroomRepository;
+    private final GamificationService gamificationService;
 
     public List<EssayExecutionResponseDTO> findAllDTOs() {
         List<EssayExecution> executions = essayExecutionRepository.findAll();
@@ -86,6 +87,9 @@ public class EssayExecutionService {
 
         // Save the essay execution
         EssayExecution savedExecution = essayExecutionRepository.save(essayExecution);
+
+        // Award XP for essay submission
+        gamificationService.awardXpForEntity(student, GamificationService.EntityType.ESSAY);
 
         // 1) Find active (non-expired) goals by student
         LocalDateTime now = LocalDateTime.now();

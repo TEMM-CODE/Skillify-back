@@ -40,6 +40,7 @@ public class PracticeExecutionStudentService {
     private final GoalRepository goalRepository;
     private final GoalExecutionRepository goalExecutionRepository;
     private final ClassroomRepository classroomRepository;
+    private final GamificationService gamificationService;
 
     // Get current authenticated student
     private User getCurrentUser() {
@@ -109,6 +110,11 @@ public class PracticeExecutionStudentService {
 
         PracticeExecution execution = practiceExecutionMapper.toEntity(createDTO);
         PracticeExecution savedExecution = practiceExecutionRepository.save(execution);
+
+        int questionCount = practice.getQuestions() != null ? practice.getQuestions().size() : 0;
+if (questionCount > 0) {
+    gamificationService.awardXp(currentStudent, questionCount * GamificationService.EntityType.QUESTION.getXp());
+}
 
         // 1) Find active (non-expired) goals by student
         LocalDateTime now = LocalDateTime.now();

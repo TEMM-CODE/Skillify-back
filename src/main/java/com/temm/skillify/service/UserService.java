@@ -6,6 +6,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.temm.skillify.model.dto.RegisterRequest;
 import com.temm.skillify.model.dto.response.AuthenticationResponse;
+import com.temm.skillify.model.dto.response.LevelProgressResponseDTO;
 import com.temm.skillify.model.dto.response.UserResponseDTO;
 import com.temm.skillify.model.entity.User;
 import com.temm.skillify.model.enums.UserRole;
@@ -24,33 +25,34 @@ public class UserService {
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
-    
+    private final GamificationService gamificationService; // Added dependency
+
     public List<User> findAll() {
         return userRepository.findAll();
     }
-    
+
     public List<UserResponseDTO> findAllDto() {
         return findAll().stream()
             .map(userMapper::toResponseDTO)
             .collect(Collectors.toList());
     }
-    
+
     public Optional<User> findById(String id) {
         return userRepository.findById(id);
     }
-    
+
     public Optional<UserResponseDTO> findDtoById(String id) {
         return findById(id).map(userMapper::toResponseDTO);
     }
-    
+
     public Optional<User> findByEmail(String email) {
         return userRepository.findByEmail(email);
     }
-    
+
     public Optional<UserResponseDTO> findDtoByEmail(String email) {
         return findByEmail(email).map(userMapper::toResponseDTO);
     }
-    
+
     public User save(User user) {
         return userRepository.save(user);
     }
@@ -61,11 +63,11 @@ public class UserService {
             .map(userMapper::toResponseDTO)
             .collect(Collectors.toList());
     }
-    
+
     public UserResponseDTO saveAndReturnDto(User user) {
         return userMapper.toResponseDTO(save(user));
     }
-    
+
     public AuthenticationResponse create(RegisterRequest request) {
         var role = UserRole.valueOf(request.getRole());
         var user = new User();
@@ -83,7 +85,7 @@ public class UserService {
         var jwtToken = jwtService.generateToken(user);
         return AuthenticationResponse.builder().token(jwtToken).build();
     }
-    
+
     public UserResponseDTO createAndReturnDto(RegisterRequest request) {
         var role = UserRole.valueOf(request.getRole());
         var user = new User();
@@ -100,19 +102,24 @@ public class UserService {
         User savedUser = userRepository.save(user);
         return userMapper.toResponseDTO(savedUser);
     }
-    
+
     public void deleteById(String id) {
         userRepository.deleteById(id);
     }
-    
+
     public User getUserFromAuthentication(Authentication authentication) {
         // Assuming the authentication principal is the email of the user
         String email = authentication.getName();
         return findByEmail(email)
             .orElseThrow(() -> new EntityNotFoundException("User not found"));
     }
-    
+
     public UserResponseDTO getUserDtoFromAuthentication(Authentication authentication) {
         return userMapper.toResponseDTO(getUserFromAuthentication(authentication));
+    }
+
+    public LevelProgressResponseDTO getLevelProgress(Authentication authentication) {
+        User user = getUserFromAuthentication(authentication);
+        return gamificationService.getLevelProgress(user);
     }
 }

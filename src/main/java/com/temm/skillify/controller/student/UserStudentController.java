@@ -1,6 +1,7 @@
 package com.temm.skillify.controller.student;
 
 import com.temm.skillify.model.dto.request.MessageCreateDTO;
+import com.temm.skillify.model.dto.response.LevelProgressResponseDTO;
 import com.temm.skillify.model.dto.response.MessageResponseDTO;
 import com.temm.skillify.model.dto.response.UserResponseDTO;
 import com.temm.skillify.model.entity.User;
@@ -22,19 +23,24 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ROLE_ESTUDANTE')")
 public class UserStudentController {
-    
+
     private final MessageService messageService;
     private final UserService userService;
     private final UserMapper userMapper;
-    
-    
+
     @GetMapping("/mentors")
-    public ResponseEntity<Set<UserResponseDTO>> findMentors(Authentication authentication){
+    public ResponseEntity<Set<UserResponseDTO>> findMentors(Authentication authentication) {
         User student = userService.findByEmail(authentication.getName()).orElseThrow();
         List<User> mentors = messageService.findMentorByStudent(student);
-                Set<UserResponseDTO> mentorsReturn = mentors.stream()
+        Set<UserResponseDTO> mentorsReturn = mentors.stream()
             .map(userMapper::toResponseDTO)
             .collect(Collectors.toSet());
         return ResponseEntity.ok(mentorsReturn);
+    }
+
+    @GetMapping("/level-progress")
+    public ResponseEntity<LevelProgressResponseDTO> getLevelProgress(Authentication authentication) {
+        LevelProgressResponseDTO progress = userService.getLevelProgress(authentication);
+        return ResponseEntity.ok(progress);
     }
 }

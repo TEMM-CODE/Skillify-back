@@ -37,6 +37,7 @@ public class CourseLessonContentWatchEventStudentService {
     private final GoalRepository goalRepository;
     private final GoalExecutionRepository goalExecutionRepository;
     private final ClassroomRepository classroomRepository;
+    private final GamificationService gamificationService;
 
     public List<CourseLessonContentWatchEventResponseDTO> getAllWatchEventsForStudent(Authentication authentication) {
         User student = userService.getUserFromAuthentication(authentication);
@@ -68,6 +69,8 @@ public class CourseLessonContentWatchEventStudentService {
 
         CourseLessonContentWatchEvent watchEvent = watchEventMapper.toEntity(requestDTO);
         CourseLessonContentWatchEvent savedWatchEvent = watchEventRepository.save(watchEvent);
+                // Award XP for essay submission
+                gamificationService.awardXpForEntity(student, GamificationService.EntityType.ESSAY);
 
         // 1) Find active (non-expired) goals by student
         LocalDateTime now = LocalDateTime.now();

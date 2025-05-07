@@ -38,6 +38,9 @@ public class User extends BaseEntity implements UserDetails {
     
     @Enumerated(EnumType.STRING)
     private UserRole role;
+
+    private int level;
+    private int xp;
     
     // Fields required for UserDetails implementation
     private boolean accountNonExpired = true;
