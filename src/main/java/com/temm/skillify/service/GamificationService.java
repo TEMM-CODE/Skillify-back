@@ -1,5 +1,7 @@
 package com.temm.skillify.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -9,6 +11,7 @@ import com.temm.skillify.repository.UserRepository;
 
 @Service
 public class GamificationService {
+    private static final Logger logger = LoggerFactory.getLogger(GamificationService.class);
 
     @Autowired
     private UserRepository userRepository;
@@ -20,7 +23,8 @@ public class GamificationService {
         int cacheSize = 1000; // Covers levels 1 to 1000
         LEVEL_THRESHOLDS = new int[cacheSize + 1];
         for (int i = 1; i <= cacheSize; i++) {
-            LEVEL_THRESHOLDS[i] = (int) Math.round(100 * Math.log(i) / Math.log(2));
+            // Quadratic progression: threshold = 100 * level^2
+            LEVEL_THRESHOLDS[i] = 100 * i * i;
         }
     }
 
@@ -44,7 +48,7 @@ public class GamificationService {
     }
 
     /**
-     * Calculates the XP threshold for a given level using a logarithmic progression.
+     * Calculates the XP threshold for a given level.
      * @param level The level (must be >= 1).
      * @return The XP threshold for the level.
      */
@@ -54,7 +58,7 @@ public class GamificationService {
             return LEVEL_THRESHOLDS[level];
         }
         // Fallback for levels beyond cache
-        return (int) Math.round(100 * Math.log(level) / Math.log(2));
+        return 100 * level * level;
     }
 
     /**
@@ -63,9 +67,12 @@ public class GamificationService {
      * @param xp The amount of XP to award.
      */
     public void awardXp(User user, int xp) {
-        user.setXp(user.getXp() + xp);
-        user.setLevel(calculateLevel(user.getXp()));
+        int newXp = user.getXp() + xp;
+        user.setXp(newXp);
+        int newLevel = calculateLevel(newXp);
+        user.setLevel(newLevel);
         userRepository.save(user);
+        logger.info("Awarded {} XP to user {}. New XP: {}, New Level: {}", xp, user.getEmail(), newXp, newLevel);
     }
 
     /**
@@ -78,16 +85,22 @@ public class GamificationService {
     }
 
     /**
-     * Calculates the level based on the user's XP using a logarithmic progression.
+     * Calculates the level based on the user's XP using a quadratic progression.
      * @param xp The user's total XP.
      * @return The corresponding level (minimum 1).
      */
     private int calculateLevel(int xp) {
-        if (xp <= 0) return 1; // Handle negative or zero XP
-        // Formula: level = floor(2^(xp * log(2) / 100))
-        double log2 = Math.log(2);
-        double level = Math.pow(2, xp * log2 / 100.0);
-        return (int) Math.floor(level);
+        if (xp <= 0) return 1;
+        // Find the level where threshold <= xp
+        int level = 1;
+        while (level < LEVEL_THRESHOLDS.length && LEVEL_THRESHOLDS[level] <= xp) {
+            level++;
+        }
+        // If xp exceeds the last cached threshold, calculate dynamically
+        if (level >= LEVEL_THRESHOLDS.length) {
+            level = (int) Math.floor(Math.sqrt(xp / 100.0)) + 1;
+        }
+        return Math.max(1, level - 1); // Return the highest level achieved
     }
 
     /**
@@ -96,23 +109,34 @@ public class GamificationService {
      * @return The XP needed to reach the next level.
      */
     public int getXpToNextLevel(User user) {
-        int currentLevel = calculateLevel(user.getXp());
-        // Calculate XP threshold for next level
+        int currentXp = user.getXp();
+        int currentLevel = calculateLevel(currentXp);
         int nextLevelThreshold = getLevelThreshold(currentLevel + 1);
-        // Return difference between next level threshold and current XP
-        return Math.max(0, nextLevelThreshold - user.getXp());
+        int xpToNextLevel = nextLevelThreshold - currentXp;
+        logger.debug("User {}: Current XP: {}, Current Level: {}, Next Level Threshold: {}, XP to Next Level: {}",
+                user.getEmail(), currentXp, currentLevel, nextLevelThreshold, xpToNextLevel);
+        return Math.max(0, xpToNextLevel);
     }
 
+    /**
+     * Retrieves the level progress for a user.
+     * @param user The user to calculate progress for.
+     * @return The level progress DTO.
+     */
     public LevelProgressResponseDTO getLevelProgress(User user) {
         int currentXp = user.getXp();
         int currentLevel = calculateLevel(currentXp);
         int nextLevelThreshold = getLevelThreshold(currentLevel + 1);
         int xpToNextLevel = Math.max(0, nextLevelThreshold - currentXp);
+
         LevelProgressResponseDTO progress = new LevelProgressResponseDTO();
         progress.currentLevel = currentLevel;
         progress.nextLevel = currentLevel + 1;
         progress.xpToNextLevel = xpToNextLevel;
         progress.currentXp = currentXp;
+
+        logger.info("Level progress for user {}: Level {}, XP {}/{} to next level",
+                user.getEmail(), currentLevel, currentXp, nextLevelThreshold);
         return progress;
     }
 }
