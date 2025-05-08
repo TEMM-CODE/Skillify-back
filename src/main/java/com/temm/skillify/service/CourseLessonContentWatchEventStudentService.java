@@ -5,6 +5,7 @@ import com.temm.skillify.model.dto.response.CourseLessonContentWatchEventRespons
 import com.temm.skillify.model.entity.Classroom;
 import com.temm.skillify.model.entity.Course;
 import com.temm.skillify.model.entity.CourseLessonContentWatchEvent;
+import com.temm.skillify.model.entity.ExperienceEvent;
 import com.temm.skillify.model.entity.Goal;
 import com.temm.skillify.model.entity.GoalExecution;
 import com.temm.skillify.model.entity.User;
@@ -12,6 +13,7 @@ import com.temm.skillify.model.enums.GoalType;
 import com.temm.skillify.model.mapper.CourseLessonContentWatchEventMapper;
 import com.temm.skillify.repository.ClassroomRepository;
 import com.temm.skillify.repository.CourseLessonContentWatchEventRepository;
+import com.temm.skillify.repository.ExperienceEventRepository;
 import com.temm.skillify.repository.GoalExecutionRepository;
 import com.temm.skillify.repository.GoalRepository;
 
@@ -38,6 +40,7 @@ public class CourseLessonContentWatchEventStudentService {
     private final GoalExecutionRepository goalExecutionRepository;
     private final ClassroomRepository classroomRepository;
     private final GamificationService gamificationService;
+    private final ExperienceEventRepository experienceEventRepository;
 
     public List<CourseLessonContentWatchEventResponseDTO> getAllWatchEventsForStudent(Authentication authentication) {
         User student = userService.getUserFromAuthentication(authentication);
@@ -58,7 +61,7 @@ public class CourseLessonContentWatchEventStudentService {
         return watchEventMapper.toResponseDTO(watchEvent);
     }
 
-    @Transactional
+   @Transactional
     public CourseLessonContentWatchEventResponseDTO createWatchEvent(CourseLessonContentWatchEventRequestDTO requestDTO, Authentication authentication) {
         User student = userService.getUserFromAuthentication(authentication);
 
@@ -69,8 +72,16 @@ public class CourseLessonContentWatchEventStudentService {
 
         CourseLessonContentWatchEvent watchEvent = watchEventMapper.toEntity(requestDTO);
         CourseLessonContentWatchEvent savedWatchEvent = watchEventRepository.save(watchEvent);
-                // Award XP for essay submission
-                gamificationService.awardXpForEntity(student, GamificationService.EntityType.ESSAY);
+
+        // Award XP for lesson watch and create ExperienceEvent
+        int xpAwarded = GamificationService.EntityType.LESSON.getXp();
+        gamificationService.awardXpForEntity(student, GamificationService.EntityType.LESSON);
+
+        // Create and save ExperienceEvent
+        ExperienceEvent experienceEvent = new ExperienceEvent();
+        experienceEvent.setUser(student);
+        experienceEvent.setXp(xpAwarded);
+        experienceEventRepository.save(experienceEvent);
 
         // 1) Find active (non-expired) goals by student
         LocalDateTime now = LocalDateTime.now();

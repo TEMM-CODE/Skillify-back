@@ -10,6 +10,7 @@ import com.temm.skillify.model.dto.request.EssayExecutionCreateDTO;
 import com.temm.skillify.model.dto.response.EssayExecutionResponseDTO;
 import com.temm.skillify.model.entity.Classroom;
 import com.temm.skillify.model.entity.EssayExecution;
+import com.temm.skillify.model.entity.ExperienceEvent;
 import com.temm.skillify.model.entity.Goal;
 import com.temm.skillify.model.entity.GoalExecution;
 import com.temm.skillify.model.entity.User;
@@ -18,6 +19,7 @@ import com.temm.skillify.model.mapper.EssayExecutionMapper;
 import com.temm.skillify.repository.ClassroomRepository;
 import com.temm.skillify.repository.EssayExecutionRepository;
 import com.temm.skillify.repository.EssayRepository;
+import com.temm.skillify.repository.ExperienceEventRepository;
 import com.temm.skillify.repository.GoalExecutionRepository;
 import com.temm.skillify.repository.GoalRepository;
 
@@ -38,6 +40,7 @@ public class EssayExecutionService {
     private final GoalExecutionRepository goalExecutionRepository;
     private final ClassroomRepository classroomRepository;
     private final GamificationService gamificationService;
+    private final ExperienceEventRepository experienceEventRepository;
 
     public List<EssayExecutionResponseDTO> findAllDTOs() {
         List<EssayExecution> executions = essayExecutionRepository.findAll();
@@ -70,6 +73,7 @@ public class EssayExecutionService {
     }
 
    
+
     public EssayExecutionResponseDTO saveForStudent(EssayExecutionCreateDTO createDTO) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User student = (User) authentication.getPrincipal();
@@ -88,8 +92,15 @@ public class EssayExecutionService {
         // Save the essay execution
         EssayExecution savedExecution = essayExecutionRepository.save(essayExecution);
 
-        // Award XP for essay submission
+        // Award XP for essay submission and create ExperienceEvent
+        int xpAwarded = GamificationService.EntityType.ESSAY.getXp();
         gamificationService.awardXpForEntity(student, GamificationService.EntityType.ESSAY);
+
+        // Create and save ExperienceEvent
+        ExperienceEvent experienceEvent = new ExperienceEvent();
+        experienceEvent.setUser(student);
+        experienceEvent.setXp(xpAwarded);
+        experienceEventRepository.save(experienceEvent);
 
         // 1) Find active (non-expired) goals by student
         LocalDateTime now = LocalDateTime.now();

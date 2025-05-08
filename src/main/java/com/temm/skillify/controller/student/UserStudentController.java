@@ -6,6 +6,7 @@ import com.temm.skillify.model.dto.request.MessageCreateDTO;
 import com.temm.skillify.model.dto.request.PasswordUpdateRequest;
 import com.temm.skillify.model.dto.response.LevelProgressResponseDTO;
 import com.temm.skillify.model.dto.response.MessageResponseDTO;
+import com.temm.skillify.model.dto.response.StudentRankingResponseDTO;
 import com.temm.skillify.model.dto.response.UserResponseDTO;
 import com.temm.skillify.model.entity.User;
 import com.temm.skillify.model.mapper.UserMapper;
@@ -81,4 +82,25 @@ public class UserStudentController {
         UserResponseDTO updatedStudent = userService.updateStudentAvatar(authentication, request);
         return ResponseEntity.ok(updatedStudent);
     }
+
+    @GetMapping("/classroom/{classroomId}/ranking")
+    public ResponseEntity<StudentRankingResponseDTO> getStudentRanking(
+            @PathVariable String classroomId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            Authentication authentication
+    ) {
+        StudentRankingResponseDTO ranking = userService.getStudentRankingByClassroom(classroomId, authentication, page, size);
+        return ResponseEntity.ok(ranking);
+    }
+
+    @GetMapping("/classrooms/rankings")
+public ResponseEntity<List<StudentRankingResponseDTO>> getStudentRankingsForAllClassrooms(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        Authentication authentication
+) {
+    List<StudentRankingResponseDTO> rankings = userService.getStudentRankingsForAllClassrooms(authentication, page, size);
+    return ResponseEntity.ok(rankings);
+}
 }

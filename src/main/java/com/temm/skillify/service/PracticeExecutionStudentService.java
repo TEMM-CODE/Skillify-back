@@ -3,6 +3,7 @@ package com.temm.skillify.service;
 import com.temm.skillify.model.dto.request.PracticeExecutionCreateDTO;
 import com.temm.skillify.model.dto.response.PracticeExecutionResponseDTO;
 import com.temm.skillify.model.entity.Classroom;
+import com.temm.skillify.model.entity.ExperienceEvent;
 import com.temm.skillify.model.entity.Goal;
 import com.temm.skillify.model.entity.GoalExecution;
 import com.temm.skillify.model.entity.Practice;
@@ -12,6 +13,7 @@ import com.temm.skillify.model.enums.GoalType;
 import com.temm.skillify.model.enums.UserRole;
 import com.temm.skillify.model.mapper.PracticeExecutionMapper;
 import com.temm.skillify.repository.ClassroomRepository;
+import com.temm.skillify.repository.ExperienceEventRepository;
 import com.temm.skillify.repository.GoalExecutionRepository;
 import com.temm.skillify.repository.GoalRepository;
 import com.temm.skillify.repository.PracticeExecutionRepository;
@@ -41,6 +43,7 @@ public class PracticeExecutionStudentService {
     private final GoalExecutionRepository goalExecutionRepository;
     private final ClassroomRepository classroomRepository;
     private final GamificationService gamificationService;
+    private final ExperienceEventRepository experienceEventRepository;
 
     // Get current authenticated student
     private User getCurrentUser() {
@@ -83,7 +86,7 @@ public class PracticeExecutionStudentService {
         return practiceExecutionMapper.toResponseDTO(execution);
     }
 
-    @Transactional
+ @Transactional
     public PracticeExecutionResponseDTO createPracticeExecution(PracticeExecutionCreateDTO createDTO) {
         User currentStudent = getCurrentUser();
         validateStudentRole(currentStudent);
@@ -112,9 +115,16 @@ public class PracticeExecutionStudentService {
         PracticeExecution savedExecution = practiceExecutionRepository.save(execution);
 
         int questionCount = practice.getQuestions() != null ? practice.getQuestions().size() : 0;
-if (questionCount > 0) {
-    gamificationService.awardXp(currentStudent, questionCount * GamificationService.EntityType.QUESTION.getXp());
-}
+        if (questionCount > 0) {
+            int xpAwarded = questionCount * GamificationService.EntityType.QUESTION.getXp();
+            gamificationService.awardXp(currentStudent, xpAwarded);
+
+            // Create and save ExperienceEvent
+            ExperienceEvent experienceEvent = new ExperienceEvent();
+            experienceEvent.setUser(currentStudent);
+            experienceEvent.setXp(xpAwarded);
+            experienceEventRepository.save(experienceEvent);
+        }
 
         // 1) Find active (non-expired) goals by student
         LocalDateTime now = LocalDateTime.now();
