@@ -17,4 +17,6 @@ public class UserResponseDTO extends BaseResponseDTO {
     private boolean studyReminder;
     private UserRole role;
     private String avatar;
+    private int level;
+    private int xp;
 }

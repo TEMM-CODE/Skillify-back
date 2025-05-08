@@ -25,6 +25,8 @@ public class UserMapper {
         dto.setRole(user.getRole());
         dto.setCreatedAt(user.getCreatedAt());
         dto.setUpdatedAt(user.getUpdatedAt());
+        dto.setXp(user.getXp());
+        dto.setLevel(user.getLevel());
         
         return dto;
     }
