@@ -2,10 +2,21 @@ package com.temm.skillify.model.mapper;
 
 import com.temm.skillify.model.dto.response.UserResponseDTO;
 import com.temm.skillify.model.entity.User;
+import com.temm.skillify.model.entity.UserAvatar;
+import com.temm.skillify.repository.UserAvatarRepository;
+
+import lombok.RequiredArgsConstructor;
+
+import java.util.Optional;
+
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class UserMapper {
+
+
+    private final UserAvatarRepository userAvatarRepository;
 
     public UserResponseDTO toResponseDTO(User user) {
         if (user == null) {
@@ -28,6 +39,8 @@ public class UserMapper {
         dto.setXp(user.getXp());
         dto.setLevel(user.getLevel());
         dto.setExpertise(user.getExpertise());
+        Optional<UserAvatar> avatar = userAvatarRepository.findByUserId(user.getId());
+        if(avatar.isPresent()){dto.setAvatar(avatar.get().getImageUrl());}
         
         return dto;
     }

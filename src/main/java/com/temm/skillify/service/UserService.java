@@ -9,11 +9,13 @@ import com.temm.skillify.model.dto.response.StudentRankingResponseDTO;
 import com.temm.skillify.model.dto.response.StudentRankingPositionDTO;
 import com.temm.skillify.model.dto.response.UserResponseDTO;
 import com.temm.skillify.model.entity.Classroom;
+import com.temm.skillify.model.entity.Course;
 import com.temm.skillify.model.entity.User;
 import com.temm.skillify.model.entity.UserAvatar;
 import com.temm.skillify.model.enums.UserRole;
 import com.temm.skillify.model.mapper.UserMapper;
 import com.temm.skillify.repository.ClassroomRepository;
+import com.temm.skillify.repository.CourseRepository;
 import com.temm.skillify.repository.UserAvatarRepository;
 import com.temm.skillify.repository.UserRepository;
 import com.temm.skillify.security.JwtService;
@@ -24,11 +26,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,15 +45,34 @@ public class UserService {
     private final UserMapper userMapper;
     private final GamificationService gamificationService;
     private final ClassroomRepository classroomRepository;
+    private final CourseRepository courseRepository;
 
     public List<User> findAll() {
         return userRepository.findAll();
     }
 
     public List<UserResponseDTO> findAllDto() {
-        return findAll().stream()
+        User admin = getCurrentUser();
+        // Find courses created by the admin
+        List<Course> adminCourses = courseRepository.findByCreator(admin);
+        // Find classrooms that contain any of the admin's courses
+        List<Classroom> classrooms = classroomRepository.findAll().stream()
+                .filter(classroom -> classroom.getCourses().stream()
+                        .anyMatch(adminCourses::contains))
+                .collect(Collectors.toList());
+        // Find students in those classrooms
+        Set<User> students = classrooms.stream()
+                .flatMap(classroom -> classroom.getStudents().stream())
+                .collect(Collectors.toSet());
+        // Map to DTOs
+        return students.stream()
                 .map(userMapper::toResponseDTO)
                 .collect(Collectors.toList());
+    }
+
+    private User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return (User) authentication.getPrincipal();
     }
 
     public Optional<User> findById(String id) {
