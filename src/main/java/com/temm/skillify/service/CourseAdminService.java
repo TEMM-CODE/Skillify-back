@@ -12,6 +12,9 @@ import com.temm.skillify.repository.CourseRepository;
 import com.temm.skillify.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -29,9 +32,16 @@ public class CourseAdminService {
     private final CourseMapper courseMapper;
 
     public List<CourseResponseDTO> findAllCourses() {
+        User currentUser = getCurrentUser();
         return courseRepository.findAll().stream()
+                .filter(course -> course.getCreator().equals(currentUser))
                 .map(courseMapper::toResponseDTO)
                 .collect(Collectors.toList());
+    }
+
+    private User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return (User) authentication.getPrincipal();
     }
 
     public Optional<CourseResponseDTO> findCourseById(String id) {

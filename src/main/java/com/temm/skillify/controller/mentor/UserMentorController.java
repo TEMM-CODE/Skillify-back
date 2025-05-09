@@ -2,6 +2,7 @@ package com.temm.skillify.controller.mentor;
 
 
 import com.temm.skillify.model.dto.response.MentorProgressStudent;
+import com.temm.skillify.model.dto.response.StudentRankingResponseDTO;
 import com.temm.skillify.model.dto.response.UserResponseDTO;
 import com.temm.skillify.model.entity.User;
 import com.temm.skillify.model.mapper.UserMapper;
@@ -13,6 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -55,4 +57,14 @@ public class UserMentorController {
         
         return ResponseEntity.ok(students);
     }
+
+     @GetMapping("/classrooms/rankings")
+public ResponseEntity<List<StudentRankingResponseDTO>> getStudentRankingsForAllClassrooms(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        Authentication authentication
+) {
+    List<StudentRankingResponseDTO> rankings = userMentorService.getStudentRankingsForAllClassrooms(page, size);
+    return ResponseEntity.ok(rankings);
+}
 }

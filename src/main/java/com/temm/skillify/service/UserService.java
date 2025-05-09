@@ -114,6 +114,7 @@ public class UserService {
         user.setWeeklyReport(request.isWeeklyReport());
         user.setStudyReminder(request.isStudyReminder());
         user.setRole(role);
+        user.setExpertise(request.getExpertise());
         User savedUser = userRepository.save(user);
         return userMapper.toResponseDTO(savedUser);
     }

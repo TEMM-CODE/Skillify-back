@@ -11,6 +11,7 @@ public class UserResponseDTO extends BaseResponseDTO {
     private String email;
     private String tel;
     private String biography;
+    private String expertise;
     private boolean emailNotifications;
     private boolean pushNotifications;
     private boolean weeklyReport;

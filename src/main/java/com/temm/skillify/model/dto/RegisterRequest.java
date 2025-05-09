@@ -15,6 +15,7 @@ public class RegisterRequest {
     private String password;
     private String tel;
     private String biography;
+    private String expertise;
     private boolean emailNotifications;
     private boolean pushNotifications;
     private boolean weeklyReport;

@@ -45,6 +45,11 @@ public class UserAdminController {
         return userService.findById(id)
             .map(existingUser -> {
                 user.setId(id);
+                user.setBiography(user.getBiography());
+                user.setExpertise(user.getExpertise());
+                user.setTel(user.getTel());
+                user.setName(user.getName());
+                user.setEmail(user.getEmail());
                 return ResponseEntity.ok(userService.saveAndReturnDto(user));
             })
             .orElse(ResponseEntity.notFound().build());

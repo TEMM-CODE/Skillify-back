@@ -1,6 +1,8 @@
 package com.temm.skillify.service;
 
 import com.temm.skillify.model.dto.response.MentorProgressStudent;
+import com.temm.skillify.model.dto.response.StudentRankingPositionDTO;
+import com.temm.skillify.model.dto.response.StudentRankingResponseDTO;
 import com.temm.skillify.model.dto.response.UserResponseDTO;
 import com.temm.skillify.model.entity.Classroom;
 import com.temm.skillify.model.entity.Course;
@@ -16,6 +18,13 @@ import com.temm.skillify.repository.UserAvatarRepository;
 import com.temm.skillify.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -124,4 +133,53 @@ public class UserMentorService {
         
         return uniqueCourseIds.size();
     }
+
+     public List<StudentRankingResponseDTO> getStudentRankingsForAllClassrooms(int page, int size) {
+        User currentMentor = getCurrentUser();
+
+        // Find all classrooms where the user is a mentor
+        List<Classroom> classrooms = classroomRepository.findByMentor(currentMentor);
+
+        // Generate ranking for each classroom
+        return classrooms.stream().map(classroom -> {
+            // Get paginated ranking of students by XP
+            Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "xp"));
+            Page<User> studentPage = userRepository.findByIdIn(
+                    classroom.getStudents().stream().map(User::getId).collect(Collectors.toList()),
+                    pageable
+            );
+
+            // Build ranking
+            List<StudentRankingPositionDTO> ranking = studentPage.getContent().stream()
+                    .map(user -> {
+                        StudentRankingPositionDTO positionDTO = new StudentRankingPositionDTO();
+                        positionDTO.userId = user.getId();
+                        positionDTO.userName = user.getName();
+                        positionDTO.xpAmount = user.getXp();
+                        Optional<UserAvatar> avatar = userAvatarRepository.findByUserId(user.getId());
+                        positionDTO.avatar = avatar.map(UserAvatar::getImageUrl).orElse(null);
+                        positionDTO.position = (int) (studentPage.getNumber() * studentPage.getSize() + studentPage.getContent().indexOf(user) + 1);
+                        return positionDTO;
+                    })
+                    .collect(Collectors.toList());
+
+            // Find the authenticated mentor's position (not applicable, so set to 0 or handle differently if needed)
+            int yourPosition = 0; // Mentors typically don't have a position in student rankings
+
+            // Build response
+            StudentRankingResponseDTO response = new StudentRankingResponseDTO();
+            response.classroomId = classroom.getId();
+            response.classroomName = classroom.getName();
+            response.ranking = ranking;
+            response.yourPosition = yourPosition;
+
+            return response;
+        }).collect(Collectors.toList());
+    }
+
+    private User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return (User) authentication.getPrincipal();
+    }
+
 }
