@@ -105,4 +105,15 @@ public ResponseEntity<List<StudentRankingResponseDTO>> getStudentRankingsForAllC
         UserResponseDTO createdStudent = userMentorService.createStudent(request, mentor);
         return ResponseEntity.ok(createdStudent);
     }
+
+        @PutMapping("/{studentId}/classrooms")
+    public ResponseEntity<Void> updateStudentClassrooms(
+            @PathVariable String studentId,
+            @RequestBody List<String> classroomIds,
+            Authentication authentication
+    ) {
+        User mentor = (User) authentication.getPrincipal();
+        userMentorService.updateStudentClassrooms(studentId, classroomIds, mentor);
+        return ResponseEntity.noContent().build();
+    }
 }

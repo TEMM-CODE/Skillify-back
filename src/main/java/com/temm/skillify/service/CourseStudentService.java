@@ -7,6 +7,7 @@ import com.temm.skillify.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,12 +27,20 @@ public class CourseStudentService {
     private final ClassroomRepository classroomRepository;
     private final CourseLessonContentMapper courseLessonContentMapper;
 
-    public List<CourseResponseDTO> getAllCourses() {
-        List<Course> courses = courseRepository.findAll();
-        return courses.stream()
-                .map(this::mapToCourseResponseDTO)
-                .collect(Collectors.toList());
+        private User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return (User) authentication.getPrincipal();
     }
+    
+public List<CourseResponseDTO> getAllCourses() {
+    User currentUser = getCurrentUser();
+    List<Classroom> classrooms = classroomRepository.findByStudentsContaining(currentUser);
+    return classrooms.stream()
+            .flatMap(classroom -> classroom.getCourses().stream())
+            .distinct()
+            .map(this::mapToCourseResponseDTO)
+            .collect(Collectors.toList());
+}
 
     public CourseResponseDTO getCourseById(String id) {
         Course course = courseRepository.findById(id)

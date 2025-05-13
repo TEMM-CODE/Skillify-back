@@ -279,4 +279,41 @@ public class UserMentorService {
         return userMapper.toResponseDTO(savedStudent);
     }
 
+    @Transactional
+public void updateStudentClassrooms(String studentId, List<String> classroomIds, User mentor) {
+    // Find the student
+    User student = userRepository.findById(studentId)
+        .orElseThrow(() -> new IllegalArgumentException("Student not found"));
+
+    // Get all classrooms where the user is a mentor
+    List<Classroom> mentorClassrooms = classroomRepository.findByMentor(mentor);
+
+    // Create a set of valid classroom IDs where the user is a mentor
+    Set<String> validClassroomIds = mentorClassrooms.stream()
+        .map(Classroom::getId)
+        .collect(Collectors.toSet());
+
+    // Validate that all provided classroom IDs are valid and belong to the mentor
+    for (String classroomId : classroomIds) {
+        if (!validClassroomIds.contains(classroomId)) {
+            throw new IllegalArgumentException("Classroom ID " + classroomId + " is not valid or not managed by this mentor");
+        }
+    }
+
+    // Remove student from all current classrooms managed by this mentor
+    mentorClassrooms.forEach(classroom -> classroom.getStudents().remove(student));
+
+    // Add student to the specified classrooms
+    for (String classroomId : classroomIds) {
+        Optional<Classroom> classroomOpt = classroomRepository.findById(classroomId);
+        if (classroomOpt.isPresent()) {
+            Classroom classroom = classroomOpt.get();
+            classroom.getStudents().add(student);
+        }
+    }
+
+    // Save all modified classrooms
+    classroomRepository.saveAll(mentorClassrooms);
+}
+
 }
