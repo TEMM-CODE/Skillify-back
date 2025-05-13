@@ -1,6 +1,7 @@
 package com.temm.skillify.controller.mentor;
 
 
+import com.temm.skillify.model.dto.RegisterRequest;
 import com.temm.skillify.model.dto.response.MentorProgressStudent;
 import com.temm.skillify.model.dto.response.StudentRankingResponseDTO;
 import com.temm.skillify.model.dto.response.UserResponseDTO;
@@ -11,8 +12,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -67,4 +72,37 @@ public ResponseEntity<List<StudentRankingResponseDTO>> getStudentRankingsForAllC
     List<StudentRankingResponseDTO> rankings = userMentorService.getStudentRankingsForAllClassrooms(page, size);
     return ResponseEntity.ok(rankings);
 }
+
+
+    @PutMapping("/{studentId}")
+    public ResponseEntity<UserResponseDTO> updateStudentProfile(
+            @PathVariable String studentId,
+            @RequestBody RegisterRequest request,
+            Authentication authentication
+    ) {
+        User mentor = (User) authentication.getPrincipal();
+        UserResponseDTO updatedStudent = userMentorService.updateStudentProfileByMentor(studentId, request, mentor);
+        return ResponseEntity.ok(updatedStudent);
+    }
+
+    @DeleteMapping("/{studentId}")
+    public ResponseEntity<Void> deleteStudent(
+            @PathVariable String studentId,
+            Authentication authentication
+    ) {
+        User mentor = (User) authentication.getPrincipal();
+        userMentorService.deleteStudentByMentor(studentId, mentor);
+        return ResponseEntity.noContent().build();
+    }
+
+
+    @PostMapping
+    public ResponseEntity<UserResponseDTO> createStudent(
+            @RequestBody RegisterRequest request,
+            Authentication authentication
+    ) {
+        User mentor = (User) authentication.getPrincipal();
+        UserResponseDTO createdStudent = userMentorService.createStudent(request, mentor);
+        return ResponseEntity.ok(createdStudent);
+    }
 }

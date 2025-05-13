@@ -1,5 +1,6 @@
 package com.temm.skillify.service;
 
+import com.temm.skillify.model.dto.RegisterRequest;
 import com.temm.skillify.model.dto.response.MentorProgressStudent;
 import com.temm.skillify.model.dto.response.StudentRankingPositionDTO;
 import com.temm.skillify.model.dto.response.StudentRankingResponseDTO;
@@ -10,6 +11,7 @@ import com.temm.skillify.model.entity.CourseLessonContentWatchEvent;
 import com.temm.skillify.model.entity.ExperienceEvent;
 import com.temm.skillify.model.entity.User;
 import com.temm.skillify.model.entity.UserAvatar;
+import com.temm.skillify.model.enums.UserRole;
 import com.temm.skillify.model.mapper.UserMapper;
 import com.temm.skillify.repository.ClassroomRepository;
 import com.temm.skillify.repository.CourseLessonContentWatchEventRepository;
@@ -180,6 +182,101 @@ public class UserMentorService {
     private User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return (User) authentication.getPrincipal();
+    }
+
+       @Transactional
+    public UserResponseDTO updateStudentProfileByMentor(String studentId, RegisterRequest request, User mentor) {
+        // Find the student
+        User student = userRepository.findById(studentId)
+            .orElseThrow(() -> new IllegalArgumentException("Student not found"));
+
+        // Verify mentor has authority (student is in one of mentor's classrooms)
+        List<Classroom> mentorClassrooms = classroomRepository.findByMentor(mentor);
+        boolean isStudentInClassroom = mentorClassrooms.stream()
+            .anyMatch(classroom -> classroom.getStudents().contains(student));
+        if (!isStudentInClassroom) {
+            throw new IllegalArgumentException("Mentor does not have authority to edit this student");
+        }
+
+        // Update student fields if provided
+        if (request.getName() != null) {
+            student.setName(request.getName());
+        }
+        if (request.getEmail() != null) {
+            student.setEmail(request.getEmail());
+        }
+        if (request.getTel() != null) {
+            student.setTel(request.getTel());
+        }
+        if (request.getBiography() != null) {
+            student.setBiography(request.getBiography());
+        }
+        student.setEmailNotifications(request.isEmailNotifications());
+        student.setPushNotifications(request.isPushNotifications());
+        student.setWeeklyReport(request.isWeeklyReport());
+        student.setStudyReminder(request.isStudyReminder());
+
+        // Save updated student
+        User updatedStudent = userRepository.save(student);
+        return userMapper.toResponseDTO(updatedStudent);
+    }
+
+    @Transactional
+    public void deleteStudentByMentor(String studentId, User mentor) {
+        // Find the student
+        User student = userRepository.findById(studentId)
+            .orElseThrow(() -> new IllegalArgumentException("Student not found"));
+
+        // Verify mentor has authority (student is in one of mentor's classrooms)
+        List<Classroom> mentorClassrooms = classroomRepository.findByMentor(mentor);
+        /*boolean isStudentInClassroom = mentorClassrooms.stream()
+            .anyMatch(classroom -> classroom.getStudents().contains(student));
+        if (!isStudentInClassroom) {
+            throw new IllegalArgumentException("Mentor does not have authority to delete this student");
+        } */
+
+        // Remove student from all mentor's classrooms
+        mentorClassrooms.forEach(classroom -> classroom.getStudents().remove(student));
+        classroomRepository.saveAll(mentorClassrooms);
+
+        // Optionally delete the student entirely if they are not in other classrooms
+        List<Classroom> allClassrooms = classroomRepository.findAll();
+        boolean isStudentInOtherClassrooms = allClassrooms.stream()
+            .anyMatch(classroom -> classroom.getStudents().contains(student));
+        if (!isStudentInOtherClassrooms) {
+            userRepository.delete(student);
+        }
+    }
+
+        @Transactional
+    public UserResponseDTO createStudent(RegisterRequest request, User mentor) {
+        // Validate required fields
+        if (request.getName() == null || request.getEmail() == null) {
+            throw new IllegalArgumentException("Name and email are required");
+        }
+
+        // Check if email is already in use
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("Email is already in use");
+        }
+
+        // Create new student
+        User student = new User();
+        student.setName(request.getName());
+        student.setEmail(request.getEmail());
+        student.setTel(request.getTel() != null ? request.getTel() : "");
+        student.setBiography(request.getBiography() != null ? request.getBiography() : "");
+        student.setEmailNotifications(request.isEmailNotifications());
+        student.setPushNotifications(request.isPushNotifications());
+        student.setWeeklyReport(request.isWeeklyReport());
+        student.setStudyReminder(request.isStudyReminder());
+        student.setXp(0); // Default XP
+        student.setRole(UserRole.ESTUDANTE);
+
+        // Save student
+        User savedStudent = userRepository.save(student);
+
+        return userMapper.toResponseDTO(savedStudent);
     }
 
 }

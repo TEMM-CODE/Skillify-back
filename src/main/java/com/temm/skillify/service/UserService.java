@@ -194,14 +194,6 @@ public class UserService {
         user.setWeeklyReport(request.isWeeklyReport());
         user.setStudyReminder(request.isStudyReminder());
 
-        if (request.getRole() != null) {
-            try {
-                user.setRole(UserRole.valueOf(request.getRole()));
-            } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("Invalid role: " + request.getRole());
-            }
-        }
-
         User updatedUser = userRepository.save(user);
         return userMapper.toResponseDTO(updatedUser);
     }

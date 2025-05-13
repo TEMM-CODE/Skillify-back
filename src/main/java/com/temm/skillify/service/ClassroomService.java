@@ -167,4 +167,24 @@ public class ClassroomService {
         
         return classroom;
     }
+
+    public ClassroomResponseDTO updateStudents(String classroomId, List<String> userIds) {
+    // Find the existing classroom
+    Classroom classroom = classroomRepository.findById(classroomId)
+        .orElseThrow(() -> new IllegalArgumentException("Classroom not found with id: " + classroomId));
+
+    // Convert user IDs to User entities
+    Set<User> students = userIds != null 
+        ? userIds.stream()
+            .map(userId -> userService.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId)))
+            .collect(Collectors.toSet())
+        : new HashSet<>();
+
+    // Update classroom's students
+    classroom.setStudents(students);
+
+    // Save and return the updated classroom as DTO
+    return convertToDTO(classroomRepository.save(classroom));
+}
 }

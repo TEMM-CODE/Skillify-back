@@ -59,4 +59,13 @@ public class ClassroomMentorController {
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
+
+        @PutMapping("/{id}/students")
+    public ResponseEntity<ClassroomResponseDTO> updateClassroomStudents(@PathVariable String id,
+                                                                      @RequestBody List<String> userIds,
+                                                                      Authentication authentication) {
+        return classroomService.findDTOByIdAndMentorEmail(id, authentication.getName())
+                .map(existingClassroom -> ResponseEntity.ok(classroomService.updateStudents(id, userIds)))
+                .orElse(ResponseEntity.notFound().build());
+    }
 }
