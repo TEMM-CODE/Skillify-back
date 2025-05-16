@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.temm.skillify.model.dto.request.EssayExecutionCreateDTO;
 import com.temm.skillify.model.dto.response.EssayExecutionResponseDTO;
 import com.temm.skillify.model.entity.Classroom;
+import com.temm.skillify.model.entity.Essay;
 import com.temm.skillify.model.entity.EssayExecution;
 import com.temm.skillify.model.entity.ExperienceEvent;
 import com.temm.skillify.model.entity.Goal;
@@ -89,6 +90,23 @@ public class EssayExecutionService {
                     .orElseThrow(() -> new RuntimeException("Essay not found")));
         }
 
+        Essay essay = essayRepository.findById(createDTO.getEssayId()).orElseThrow();
+
+
+        // Check minimum word count
+        String text = createDTO.getText();
+        int wordCount = text.trim().isEmpty() ? 0 : text.trim().split("\\s+").length;
+        if (essay.getMinWords() != null && wordCount < essay.getMinWords()) {
+            throw new RuntimeException("Essay text does not meet minimum word count of " + essay.getMinWords());
+        }
+
+        
+        List<EssayExecution> executionAlready = essayExecutionRepository.findByEssay(essay);
+
+        if(!executionAlready.isEmpty()){
+            throw new RuntimeException("Já há um essay execution");
+        }
+
         // Save the essay execution
         EssayExecution savedExecution = essayExecutionRepository.save(essayExecution);
 
@@ -144,12 +162,12 @@ public class EssayExecutionService {
                 goalExecution.setStudent(student);
                 // Set amount to the number of unique essay executions
                 goalExecution.setAmount(relevantExecutions.size());
-                System.out.println("Goal execution " + goalExecution.getCreatedAt());
+                
                 goalExecutionRepository.save(goalExecution);
             } else {
                 // 6) Update existing goal execution
                 goalExecution.setAmount(goalExecution.getAmount() + 1);
-                System.out.println("Goal execution " + goalExecution.getCreatedAt());
+                
                 goalExecutionRepository.save(goalExecution);
             }
         }

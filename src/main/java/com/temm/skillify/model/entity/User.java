@@ -13,6 +13,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import com.temm.skillify.model.categories.BaseEntity;
 import com.temm.skillify.model.enums.UserRole;
 
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -42,6 +44,12 @@ public class User extends BaseEntity implements UserDetails {
 
     private int level;
     private int xp;
+
+
+    @ElementCollection
+    @CollectionTable(name = "horarios_disponiveis", joinColumns = @JoinColumn(name = "profissional_id"))
+    @Column(name = "horario")
+    private List<LocalTime> horariosDisponiveis = new ArrayList<>();
     
     // Fields required for UserDetails implementation
     private boolean accountNonExpired = true;

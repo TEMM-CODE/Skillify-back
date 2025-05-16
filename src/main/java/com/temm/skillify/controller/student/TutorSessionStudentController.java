@@ -12,6 +12,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 @RestController
@@ -65,4 +67,34 @@ public class TutorSessionStudentController {
         TutorSessionResponseDTO createdSession = sessionService.createFromStudent(sessionDTO);
         return ResponseEntity.ok(createdSession);
     }
+
+    @GetMapping("/by-mentor-and-date")
+public ResponseEntity<List<TutorSessionResponseDTO>> getSessionsByMentorAndDate(
+        @RequestParam String mentorId,
+        @RequestParam String date, // ISO-8601 format: yyyy-MM-dd
+        Authentication authentication) {
+    
+    User student = userService.getUserFromAuthentication(authentication);
+
+    // Validate mentor exists
+    User mentor = userService.findById(mentorId)
+            .orElseThrow(() -> new RuntimeException("Mentor not found"));
+
+    // Check if the mentor is connected to the student's classroom(s)
+    boolean isMentorOfStudentClassroom = sessionService.isMentorOfStudentClassroom(student, mentor);
+    if (!isMentorOfStudentClassroom) {
+        return ResponseEntity.badRequest().build();
+    }
+
+    // Parse date
+    LocalDate parsedDate;
+    try {
+        parsedDate = LocalDate.parse(date);
+    } catch (DateTimeParseException e) {
+        return ResponseEntity.badRequest().body(null);
+    }
+
+    List<TutorSessionResponseDTO> sessions = sessionService.findByMentorAndDate(mentorId, parsedDate);
+    return ResponseEntity.ok(sessions);
+}
 }

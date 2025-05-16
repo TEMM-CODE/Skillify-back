@@ -4,6 +4,7 @@ package com.temm.skillify.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import com.temm.skillify.model.entity.Essay;
 import com.temm.skillify.model.entity.EssayExecution;
 import com.temm.skillify.model.entity.User;
 
@@ -15,4 +16,5 @@ public interface EssayExecutionRepository extends JpaRepository<EssayExecution, 
     List<EssayExecution> findByStudent(User student);
     Optional<EssayExecution> findByIdAndStudent(String id, User student);
     List<EssayExecution> findByEssayClassroomIdIn(List<String> classroomIds);
+    List<EssayExecution> findByEssay(Essay essay);
 }

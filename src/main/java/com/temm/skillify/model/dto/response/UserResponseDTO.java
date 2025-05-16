@@ -2,6 +2,9 @@ package com.temm.skillify.model.dto.response;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import java.util.List;
+
 import com.temm.skillify.model.enums.UserRole;
 
 @Data
@@ -20,4 +23,5 @@ public class UserResponseDTO extends BaseResponseDTO {
     private String avatar;
     private int level;
     private int xp;
+    private List<String> horarios;
 }

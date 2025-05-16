@@ -9,7 +9,11 @@ import com.temm.skillify.model.dto.RegisterRequest;
 import com.temm.skillify.model.dto.response.UserResponseDTO;
 import com.temm.skillify.model.entity.User;
 import com.temm.skillify.service.UserService;
+
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/admin/users")
@@ -41,16 +45,20 @@ public class UserAdminController {
     }
     
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponseDTO> updateUser(@PathVariable String id, @RequestBody User user) {
+    public ResponseEntity<UserResponseDTO> updateUser(@PathVariable String id, @RequestBody RegisterRequest request) {
         return userService.findById(id)
             .map(existingUser -> {
-                user.setId(id);
-                user.setBiography(user.getBiography());
-                user.setExpertise(user.getExpertise());
-                user.setTel(user.getTel());
-                user.setName(user.getName());
-                user.setEmail(user.getEmail());
-                return ResponseEntity.ok(userService.saveAndReturnDto(user));
+                existingUser.setBiography(request.getBiography());
+                existingUser.setExpertise(request.getExpertise());
+                existingUser.setTel(request.getTel());
+                existingUser.setName(request.getName());
+                existingUser.setEmail(request.getEmail());
+                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("H:mm");
+                      List<LocalTime> horarios = request.getHorarios().stream()
+                      .map(s -> LocalTime.parse(s, formatter))
+                      .collect(Collectors.toList());
+        existingUser.setHorariosDisponiveis(horarios);
+                return ResponseEntity.ok(userService.saveAndReturnDto(existingUser));
             })
             .orElse(ResponseEntity.notFound().build());
     }

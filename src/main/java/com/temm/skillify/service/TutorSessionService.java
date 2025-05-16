@@ -47,7 +47,8 @@ public class TutorSessionService {
                 .collect(Collectors.toList());
     }
 
-    public List<TutorSessionResponseDTO> findByMentorAndDate(User mentor, LocalDate date) {
+    public List<TutorSessionResponseDTO> findByMentorAndDate(String mentorId, LocalDate date) {
+        User mentor = userRepository.findById(mentorId).orElseThrow();
         return sessionRepository.findByMentorAndDate(mentor, date).stream()
                 .map(tutorSessionMapper::toResponseDTO)
                 .collect(Collectors.toList());

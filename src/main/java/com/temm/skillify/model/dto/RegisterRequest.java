@@ -1,5 +1,7 @@
 package com.temm.skillify.model.dto;
 
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,4 +23,5 @@ public class RegisterRequest {
     private boolean weeklyReport;
     private boolean studyReminder;
     private String role;
+    private List<String> horarios;
 }
