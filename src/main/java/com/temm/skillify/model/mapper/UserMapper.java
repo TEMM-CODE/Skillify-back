@@ -47,7 +47,6 @@ public class UserMapper {
                        .map(h -> h.format(formatter))
                        .collect(Collectors.toList());
         dto.setHorarios(horarios);
-        System.out.println("Horarios"+ horarios);
         Optional<UserAvatar> avatar = userAvatarRepository.findByUserId(user.getId());
         if(avatar.isPresent()){dto.setAvatar(avatar.get().getImageUrl());}
         

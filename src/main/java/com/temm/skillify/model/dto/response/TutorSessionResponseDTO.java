@@ -12,7 +12,7 @@ public class TutorSessionResponseDTO extends BaseResponseDTO {
     private UserResponseDTO mentor;
     private String title;
     private LocalDate date;
-    private LocalDateTime dateHour;
+    private String dateHour;
     private SessionType type;
     private String link;
     private UserResponseDTO student;

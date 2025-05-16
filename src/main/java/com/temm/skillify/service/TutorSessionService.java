@@ -111,12 +111,8 @@ public class TutorSessionService {
         User mentor = userService.getUserFromAuthentication(authentication);
         TutorSession session = tutorSessionMapper.toEntity(dto);
         session.setMentor(mentor);
-        
-        // If dateHour is set but date is not, extract date from dateHour
-        if (session.getDateHour() != null && session.getDate() == null) {
-            session.setDate(session.getDateHour().toLocalDate());
-        }
-        
+        session.setDateHour(dto.getDateHour());
+
         return tutorSessionMapper.toResponseDTO(sessionRepository.save(session));
     }
 
@@ -125,10 +121,8 @@ public class TutorSessionService {
         TutorSession session = tutorSessionMapper.toEntity(dto);
         User mentor = userService.findById(dto.getMentorId()).orElseThrow();
         session.setMentor(mentor);
-        // If dateHour is set but date is not, extract date from dateHour
-        if (session.getDateHour() != null && session.getDate() == null) {
-            session.setDate(session.getDateHour().toLocalDate());
-        }
+        session.setDateHour(dto.getDateHour());
+        session.setDate(dto.getDate());
         
         return tutorSessionMapper.toResponseDTO(sessionRepository.save(session));
     }
@@ -144,12 +138,8 @@ public class TutorSessionService {
         session.setType(dto.getType());
         session.setLink(dto.getLink());
         
-        if (dto.getDateHour() != null) {
-            session.setDateHour(dto.getDateHour());
-            session.setDate(dto.getDateHour().toLocalDate());
-        } else if (dto.getDate() != null) {
-            session.setDate(dto.getDate());
-        }
+        session.setDateHour(dto.getDateHour());
+        session.setDate(dto.getDate());
         
         if (dto.getStudentId() != null && !dto.getStudentId().isEmpty()) {
             User student = userRepository.findById(dto.getStudentId())
@@ -165,6 +155,16 @@ public class TutorSessionService {
         
         TutorSession session = sessionRepository.findById(id)
                 .filter(s -> s.getMentor().getId().equals(mentor.getId()))
+                .orElseThrow(() -> new EntityNotFoundException("Tutor session not found or you don't have permission"));
+        
+        sessionRepository.delete(session);
+    }
+
+      public void deleteStudentTutorSession(String id, Authentication authentication) {
+        User student = userService.getUserFromAuthentication(authentication);
+        
+        TutorSession session = sessionRepository.findById(id)
+                .filter(s -> s.getStudent() != null && s.getStudent().getId().equals(student.getId()))
                 .orElseThrow(() -> new EntityNotFoundException("Tutor session not found or you don't have permission"));
         
         sessionRepository.delete(session);

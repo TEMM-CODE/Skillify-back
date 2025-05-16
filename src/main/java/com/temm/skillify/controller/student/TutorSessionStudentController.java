@@ -6,6 +6,7 @@ import com.temm.skillify.model.entity.User;
 import com.temm.skillify.service.TutorSessionService;
 import com.temm.skillify.service.UserService;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -97,4 +98,14 @@ public ResponseEntity<List<TutorSessionResponseDTO>> getSessionsByMentorAndDate(
     List<TutorSessionResponseDTO> sessions = sessionService.findByMentorAndDate(mentorId, parsedDate);
     return ResponseEntity.ok(sessions);
 }
+
+ @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteTutorSession(@PathVariable String id, Authentication authentication) {
+        try {
+            sessionService.deleteStudentTutorSession(id, authentication);
+            return ResponseEntity.noContent().build();
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }

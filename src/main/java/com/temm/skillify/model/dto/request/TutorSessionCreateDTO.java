@@ -10,7 +10,7 @@ public class TutorSessionCreateDTO {
     private String mentorId;
     private String title;
     private LocalDate date;
-    private LocalDateTime dateHour;
+    private String dateHour;
     private SessionType type;
     private String link;
     private String studentId;

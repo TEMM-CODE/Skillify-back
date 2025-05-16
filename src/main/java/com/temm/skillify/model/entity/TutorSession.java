@@ -24,7 +24,7 @@ public class TutorSession extends BaseEntity {
     
     private String title;
     private LocalDate date;
-    private LocalDateTime dateHour;
+    private String dateHour;
     
     @Enumerated(EnumType.STRING)
     private SessionType type;
