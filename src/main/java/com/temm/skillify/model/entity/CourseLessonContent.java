@@ -26,6 +26,6 @@ public class CourseLessonContent extends BaseEntity {
     private CourseLessonContentType type; // "TEXT" or "IMAGE"
 
 
-    @Column(name = "\"value\"") 
+    @Column(name = "\"value\"", length = 4000) 
     private String value; // Holds either text or an image URL
 }

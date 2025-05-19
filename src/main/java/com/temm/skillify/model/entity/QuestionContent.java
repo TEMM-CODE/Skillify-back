@@ -27,7 +27,7 @@ public class QuestionContent extends BaseEntity{
     private QuestionContentType type; // "TEXT" or "IMAGE"
 
 
-    @Column(name = "\"value\"") 
+    @Column(name = "\"value\"", length = 4000) 
     private String value; // Holds either text or an image URL
 
     // Getters and setters
