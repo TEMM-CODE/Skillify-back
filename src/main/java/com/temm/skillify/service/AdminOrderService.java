@@ -61,10 +61,7 @@ public class AdminOrderService {
             return List.of();
         }
         
-        List<Order> orders = orderRepository.findBySalesPlan(plan.get());
-        return orders.stream()
-                .map(orderMapper::toDTO)
-                .collect(Collectors.toList());
+        return null;
     }
     
     public List<OrderResponseDTO> findActiveOrders() {
@@ -96,7 +93,6 @@ public class AdminOrderService {
         
         Order order = new Order();
         order.setUser(user);
-        order.setSalesPlan(plan);
         order.setPurchaseDate(now);
         order.setExpirationDate(expirationDate);
         order.setActive(true);
@@ -112,7 +108,6 @@ public class AdminOrderService {
         if (orderDetails.getSalesPlanId() != null) {
             SalesPlan salesPlan = salesPlanRepository.findById(orderDetails.getSalesPlanId())
                     .orElseThrow(() -> new RuntimeException("Sales plan not found"));
-            order.setSalesPlan(salesPlan);
         }
         
         if (orderDetails.getUserId() != null) {

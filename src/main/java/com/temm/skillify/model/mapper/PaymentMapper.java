@@ -61,12 +61,6 @@ public class PaymentMapper {
         dto.setId(payment.getId());
         dto.setAmount(payment.getAmount());
         
-        if (payment.getOrder() != null) {
-            dto.setOrderId(payment.getOrder().getId());
-            dto.setOrderDetails(payment.getOrder().getSalesPlan().getName() + " - " + 
-                                payment.getOrder().getSalesPlan().getPrice());
-        }
-        
         if (payment.getUser() != null) {
             dto.setUserId(payment.getUser().getId());
             dto.setUserName(payment.getUser().getName());

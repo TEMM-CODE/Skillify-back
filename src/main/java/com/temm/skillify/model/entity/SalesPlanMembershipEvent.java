@@ -1,8 +1,7 @@
 package com.temm.skillify.model.entity;
-
-
 import com.temm.skillify.model.categories.BaseEntity;
 import com.temm.skillify.model.enums.PlanType;
+import com.temm.skillify.model.enums.SalesPlanMembershipType;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -18,21 +17,16 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class SalesPlan extends BaseEntity {
-    
-    private String name;
-    
-    @Column(length = 1000)
-    private String description;
-    
-    private BigDecimal price;
-    
-    @Enumerated(EnumType.STRING)
-    private PlanType type;
-    
-    @ElementCollection(fetch = FetchType.EAGER)
-    private List<String> resources;
 
-    @OneToMany(fetch = FetchType.EAGER)
-    private List<User> users;
+public class SalesPlanMembershipEvent  extends BaseEntity {
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    private User customer;
+
+   @ManyToOne(fetch = FetchType.EAGER)
+   private SalesPlan salesPlan;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private SalesPlanMembershipType status;
 }

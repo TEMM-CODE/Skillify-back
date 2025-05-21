@@ -9,11 +9,11 @@ import java.util.List;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class SalesPlanResponseDTO extends BaseResponseDTO {
+public class SalesPlanAdminReturnDTO extends BaseResponseDTO {
     private String name;
     private String description;
     private BigDecimal price;
     private PlanType type;
     private List<String> resources;
-    private List<SalesPlanMembershipEventReturnDTO> membershipEvents;
+    private List<SalesPlanAdminMembershipEventReturnDTO> membershipEvents;
 }

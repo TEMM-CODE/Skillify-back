@@ -15,7 +15,6 @@ import java.util.Optional;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, String> {
     List<Order> findByUser(User user);
-    List<Order> findBySalesPlan(SalesPlan salesPlan);
     List<Order> findByActiveTrue();
     List<Order> findByExpirationDateBefore(LocalDateTime date);
     Optional<Order> findByUserAndActiveTrue(User user);

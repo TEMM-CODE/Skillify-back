@@ -16,14 +16,12 @@ public class OrderMapper {
         
         OrderResponseDTO dto = new OrderResponseDTO();
         dto.setId(order.getId());
-        dto.setSalesPlanId(order.getSalesPlan().getId());
-        dto.setSalesPlanName(order.getSalesPlan().getName());
+
         dto.setUserId(order.getUser().getId());
         dto.setUserName(order.getUser().getName());
         dto.setPurchaseDate(order.getPurchaseDate());
         dto.setExpirationDate(order.getExpirationDate());
         dto.setActive(order.isActive());
-        dto.setPrice(order.getSalesPlan().getPrice());
         
         return dto;
     }

@@ -74,7 +74,6 @@ public class StudentOrderService {
         
         Order order = new Order();
         order.setUser(user);
-        order.setSalesPlan(plan);
         order.setPurchaseDate(now);
         order.setExpirationDate(expirationDate);
         order.setActive(true);

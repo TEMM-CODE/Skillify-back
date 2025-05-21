@@ -43,6 +43,8 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/sales-plans").permitAll()
+                .requestMatchers("/pacotes-admin").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/actuator/**").hasAnyAuthority(UserRole.MENTOR.getRole(), UserRole.ADMIN.getRole())

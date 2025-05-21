@@ -18,7 +18,7 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class SalesPlan extends BaseEntity {
+public class SalesPlanAdmin extends BaseEntity {
     
     private String name;
     
@@ -33,6 +33,6 @@ public class SalesPlan extends BaseEntity {
     @ElementCollection(fetch = FetchType.EAGER)
     private List<String> resources;
 
-    @OneToMany(fetch = FetchType.EAGER)
-    private List<User> users;
+    @OneToOne(fetch = FetchType.EAGER)
+    private User creator;
 }

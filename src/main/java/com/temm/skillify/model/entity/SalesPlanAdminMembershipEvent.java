@@ -1,30 +1,27 @@
 package com.temm.skillify.model.entity;
 
-
+import com.temm.skillify.model.categories.BaseEntity;
+import com.temm.skillify.model.enums.SalesPlanMembershipType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
-
 @Entity
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class Order extends com.temm.skillify.model.categories.BaseEntity {
-    
+public class SalesPlanAdminMembershipEvent extends BaseEntity {
+
     @ManyToOne(fetch = FetchType.EAGER)
-    private SalesPlanAdminMembershipEvent salesPlanMembership;
-    
+    private User customer;
+
     @ManyToOne(fetch = FetchType.EAGER)
-    private User user;
-    
-    private LocalDateTime purchaseDate;
-    private LocalDateTime expirationDate;
-    
-    private boolean active;
+    private SalesPlanAdmin salesPlan;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private SalesPlanMembershipType status;
 }

@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class Order extends com.temm.skillify.model.categories.BaseEntity {
+public class OrderAdmin extends com.temm.skillify.model.categories.BaseEntity {
     
     @ManyToOne(fetch = FetchType.EAGER)
     private SalesPlanAdminMembershipEvent salesPlanMembership;
