@@ -1,4 +1,4 @@
-package com.temm.skillify.service;
+package com.temm.skillify.service.admin;
 
 import com.temm.skillify.model.dto.request.SalesPlanCreateDTO;
 import com.temm.skillify.model.dto.request.SalesPlanMembershipEventCreateDTO;

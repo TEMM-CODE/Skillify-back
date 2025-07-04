@@ -4,7 +4,8 @@ import com.temm.skillify.model.dto.request.SalesPlanAdminCreateDTO;
 import com.temm.skillify.model.dto.request.SalesPlanAdminMembershipEventCreateDTO;
 import com.temm.skillify.model.dto.response.SalesPlanAdminMembershipEventReturnDTO;
 import com.temm.skillify.model.dto.response.SalesPlanAdminReturnDTO;
-import com.temm.skillify.service.AdminSalesPlanAdminService;
+import com.temm.skillify.service.admin.AdminSalesPlanAdminService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
