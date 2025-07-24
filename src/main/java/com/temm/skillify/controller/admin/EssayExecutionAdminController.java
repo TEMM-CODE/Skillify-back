@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import com.temm.skillify.model.dto.response.EssayExecutionResponseDTO;
 import com.temm.skillify.model.dto.request.EssayExecutionCreateDTO;
@@ -20,8 +21,8 @@ public class EssayExecutionAdminController {
     private final EssayExecutionAdminService essayExecutionAdminService;
     
     @GetMapping
-    public ResponseEntity<List<EssayExecutionResponseDTO>> getAllExecutions() {
-        return ResponseEntity.ok(essayExecutionAdminService.findAll());
+    public ResponseEntity<List<EssayExecutionResponseDTO>> getAllExecutions(Authentication authentication) {
+        return ResponseEntity.ok(essayExecutionAdminService.findAll(authentication));
     }
     
     @GetMapping("/{id}")

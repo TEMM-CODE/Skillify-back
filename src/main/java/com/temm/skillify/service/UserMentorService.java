@@ -11,6 +11,7 @@ import com.temm.skillify.model.entity.CourseLessonContentWatchEvent;
 import com.temm.skillify.model.entity.ExperienceEvent;
 import com.temm.skillify.model.entity.User;
 import com.temm.skillify.model.entity.UserAvatar;
+import com.temm.skillify.model.enums.BackgroundColorEnum;
 import com.temm.skillify.model.enums.UserRole;
 import com.temm.skillify.model.mapper.UserMapper;
 import com.temm.skillify.repository.ClassroomRepository;
@@ -314,6 +315,24 @@ public void updateStudentClassrooms(String studentId, List<String> classroomIds,
 
     // Save all modified classrooms
     classroomRepository.saveAll(mentorClassrooms);
+}
+
+public String getBackgroundColor() {
+    User user = getCurrentUser();
+    BackgroundColorEnum color = user.getBackgroundColor();
+    return color != null ? color.getHex() : null;
+}
+
+public String changeBackgroundColor(String color) {
+    User user = getCurrentUser();
+    try {
+        BackgroundColorEnum newColor = BackgroundColorEnum.fromString(color);
+        user.setBackgroundColor(newColor);
+        userRepository.save(user);
+        return newColor.getHex();
+    } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException("Invalid color. Allowed values: DARK_BLUE, BLACK, WHITE or hex codes #1E2A38, #000000, #FFFFFF.");
+    }
 }
 
 }

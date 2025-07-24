@@ -1,36 +1,60 @@
-2025-05-21 11:00:30 jdbc[3]: exception
+2025-07-24 16:51:49 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "create table [*]order (id varchar(255) not null, created_at timestamp(6), updated_at timestamp(6), active boolean not null, expiration_date timestamp(6), purchase_date timestamp(6), sales_plan_membership_id varchar(255), user_id varchar(255), primary key (id))"; expected "identifier"; SQL statement:
 create table order (id varchar(255) not null, created_at timestamp(6), updated_at timestamp(6), active boolean not null, expiration_date timestamp(6), purchase_date timestamp(6), sales_plan_membership_id varchar(255), user_id varchar(255), primary key (id)) [42001-214]
-2025-05-21 11:00:30 jdbc[3]: exception
+2025-07-24 16:51:49 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "alter table if exists [*]order add constraint FKjiaogk5wfll1ofworts739ymg foreign key (sales_plan_membership_id) references sales_plan_admin_membership_event"; expected "identifier"; SQL statement:
 alter table if exists order add constraint FKjiaogk5wfll1ofworts739ymg foreign key (sales_plan_membership_id) references sales_plan_admin_membership_event [42001-214]
-2025-05-21 11:00:30 jdbc[3]: exception
+2025-07-24 16:51:49 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "alter table if exists [*]order add constraint FKdlrctv8tnrrfcqvt81yb8sflo foreign key (user_id) references app_user"; expected "identifier"; SQL statement:
 alter table if exists order add constraint FKdlrctv8tnrrfcqvt81yb8sflo foreign key (user_id) references app_user [42001-214]
-2025-05-21 11:00:30 jdbc[3]: exception
+2025-07-24 16:51:49 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "alter table if exists payment add constraint FK458pu56xefty15ugupb46wrin foreign key (order_id) references [*]order"; expected "identifier"; SQL statement:
 alter table if exists payment add constraint FK458pu56xefty15ugupb46wrin foreign key (order_id) references order [42001-214]
-2025-05-21 11:02:24 jdbc[3]: exception
+2025-07-24 16:56:46 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "create table [*]order (id varchar(255) not null, created_at timestamp(6), updated_at timestamp(6), active boolean not null, expiration_date timestamp(6), purchase_date timestamp(6), sales_plan_membership_id varchar(255), user_id varchar(255), primary key (id))"; expected "identifier"; SQL statement:
 create table order (id varchar(255) not null, created_at timestamp(6), updated_at timestamp(6), active boolean not null, expiration_date timestamp(6), purchase_date timestamp(6), sales_plan_membership_id varchar(255), user_id varchar(255), primary key (id)) [42001-214]
-2025-05-21 11:02:24 jdbc[3]: exception
+2025-07-24 16:56:46 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "alter table if exists [*]order add constraint FKjiaogk5wfll1ofworts739ymg foreign key (sales_plan_membership_id) references sales_plan_admin_membership_event"; expected "identifier"; SQL statement:
 alter table if exists order add constraint FKjiaogk5wfll1ofworts739ymg foreign key (sales_plan_membership_id) references sales_plan_admin_membership_event [42001-214]
-2025-05-21 11:02:24 jdbc[3]: exception
+2025-07-24 16:56:46 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "alter table if exists [*]order add constraint FKdlrctv8tnrrfcqvt81yb8sflo foreign key (user_id) references app_user"; expected "identifier"; SQL statement:
 alter table if exists order add constraint FKdlrctv8tnrrfcqvt81yb8sflo foreign key (user_id) references app_user [42001-214]
-2025-05-21 11:02:24 jdbc[3]: exception
+2025-07-24 16:56:46 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "alter table if exists payment add constraint FK458pu56xefty15ugupb46wrin foreign key (order_id) references [*]order"; expected "identifier"; SQL statement:
 alter table if exists payment add constraint FK458pu56xefty15ugupb46wrin foreign key (order_id) references order [42001-214]
-2025-05-21 15:37:27 jdbc[3]: exception
+2025-07-24 16:57:59 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "create table [*]order (id varchar(255) not null, created_at timestamp(6), updated_at timestamp(6), active boolean not null, expiration_date timestamp(6), purchase_date timestamp(6), sales_plan_membership_id varchar(255), user_id varchar(255), primary key (id))"; expected "identifier"; SQL statement:
 create table order (id varchar(255) not null, created_at timestamp(6), updated_at timestamp(6), active boolean not null, expiration_date timestamp(6), purchase_date timestamp(6), sales_plan_membership_id varchar(255), user_id varchar(255), primary key (id)) [42001-214]
-2025-05-21 15:37:27 jdbc[3]: exception
+2025-07-24 16:57:59 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "alter table if exists [*]order add constraint FKjiaogk5wfll1ofworts739ymg foreign key (sales_plan_membership_id) references sales_plan_admin_membership_event"; expected "identifier"; SQL statement:
 alter table if exists order add constraint FKjiaogk5wfll1ofworts739ymg foreign key (sales_plan_membership_id) references sales_plan_admin_membership_event [42001-214]
-2025-05-21 15:37:27 jdbc[3]: exception
+2025-07-24 16:57:59 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "alter table if exists [*]order add constraint FKdlrctv8tnrrfcqvt81yb8sflo foreign key (user_id) references app_user"; expected "identifier"; SQL statement:
 alter table if exists order add constraint FKdlrctv8tnrrfcqvt81yb8sflo foreign key (user_id) references app_user [42001-214]
-2025-05-21 15:37:27 jdbc[3]: exception
+2025-07-24 16:57:59 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "alter table if exists payment add constraint FK458pu56xefty15ugupb46wrin foreign key (order_id) references [*]order"; expected "identifier"; SQL statement:
+alter table if exists payment add constraint FK458pu56xefty15ugupb46wrin foreign key (order_id) references order [42001-214]
+2025-07-24 16:59:06 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "create table [*]order (id varchar(255) not null, created_at timestamp(6), updated_at timestamp(6), active boolean not null, expiration_date timestamp(6), purchase_date timestamp(6), sales_plan_membership_id varchar(255), user_id varchar(255), primary key (id))"; expected "identifier"; SQL statement:
+create table order (id varchar(255) not null, created_at timestamp(6), updated_at timestamp(6), active boolean not null, expiration_date timestamp(6), purchase_date timestamp(6), sales_plan_membership_id varchar(255), user_id varchar(255), primary key (id)) [42001-214]
+2025-07-24 16:59:06 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "alter table if exists [*]order add constraint FKjiaogk5wfll1ofworts739ymg foreign key (sales_plan_membership_id) references sales_plan_admin_membership_event"; expected "identifier"; SQL statement:
+alter table if exists order add constraint FKjiaogk5wfll1ofworts739ymg foreign key (sales_plan_membership_id) references sales_plan_admin_membership_event [42001-214]
+2025-07-24 16:59:06 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "alter table if exists [*]order add constraint FKdlrctv8tnrrfcqvt81yb8sflo foreign key (user_id) references app_user"; expected "identifier"; SQL statement:
+alter table if exists order add constraint FKdlrctv8tnrrfcqvt81yb8sflo foreign key (user_id) references app_user [42001-214]
+2025-07-24 16:59:06 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "alter table if exists payment add constraint FK458pu56xefty15ugupb46wrin foreign key (order_id) references [*]order"; expected "identifier"; SQL statement:
+alter table if exists payment add constraint FK458pu56xefty15ugupb46wrin foreign key (order_id) references order [42001-214]
+2025-07-24 16:59:31 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "create table [*]order (id varchar(255) not null, created_at timestamp(6), updated_at timestamp(6), active boolean not null, expiration_date timestamp(6), purchase_date timestamp(6), sales_plan_membership_id varchar(255), user_id varchar(255), primary key (id))"; expected "identifier"; SQL statement:
+create table order (id varchar(255) not null, created_at timestamp(6), updated_at timestamp(6), active boolean not null, expiration_date timestamp(6), purchase_date timestamp(6), sales_plan_membership_id varchar(255), user_id varchar(255), primary key (id)) [42001-214]
+2025-07-24 16:59:31 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "alter table if exists [*]order add constraint FKjiaogk5wfll1ofworts739ymg foreign key (sales_plan_membership_id) references sales_plan_admin_membership_event"; expected "identifier"; SQL statement:
+alter table if exists order add constraint FKjiaogk5wfll1ofworts739ymg foreign key (sales_plan_membership_id) references sales_plan_admin_membership_event [42001-214]
+2025-07-24 16:59:31 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "alter table if exists [*]order add constraint FKdlrctv8tnrrfcqvt81yb8sflo foreign key (user_id) references app_user"; expected "identifier"; SQL statement:
+alter table if exists order add constraint FKdlrctv8tnrrfcqvt81yb8sflo foreign key (user_id) references app_user [42001-214]
+2025-07-24 16:59:31 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "alter table if exists payment add constraint FK458pu56xefty15ugupb46wrin foreign key (order_id) references [*]order"; expected "identifier"; SQL statement:
 alter table if exists payment add constraint FK458pu56xefty15ugupb46wrin foreign key (order_id) references order [42001-214]

@@ -10,12 +10,15 @@ import com.temm.skillify.model.dto.response.StudentRankingPositionDTO;
 import com.temm.skillify.model.dto.response.UserResponseDTO;
 import com.temm.skillify.model.entity.Classroom;
 import com.temm.skillify.model.entity.Course;
+import com.temm.skillify.model.entity.MentorMembership;
 import com.temm.skillify.model.entity.User;
 import com.temm.skillify.model.entity.UserAvatar;
+import com.temm.skillify.model.enums.BackgroundColorEnum;
 import com.temm.skillify.model.enums.UserRole;
 import com.temm.skillify.model.mapper.UserMapper;
 import com.temm.skillify.repository.ClassroomRepository;
 import com.temm.skillify.repository.CourseRepository;
+import com.temm.skillify.repository.MentorMembershipRepository;
 import com.temm.skillify.repository.UserAvatarRepository;
 import com.temm.skillify.repository.UserRepository;
 import com.temm.skillify.security.JwtService;
@@ -48,6 +51,7 @@ public class UserService {
     private final GamificationService gamificationService;
     private final ClassroomRepository classroomRepository;
     private final CourseRepository courseRepository;
+    private final MentorMembershipRepository mentorMembershipRepository;
 
     public List<User> findAll() {
         return userRepository.findAll();
@@ -104,6 +108,20 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+        public int findAllMentorsCount(Authentication authentication) {
+                User admin = getUserFromAuthentication(authentication);
+        return mentorMembershipRepository.findByAdmin(admin)
+                .stream()
+                .collect(Collectors.toList()).size();
+    }
+
+            public Long findAllStudentsCount(Authentication authentication) {
+                User admin = getUserFromAuthentication(authentication);
+        return userRepository.findAllStudentsByAdminCount(admin);
+    }
+
+
+
     public UserResponseDTO saveAndReturnDto(User user) {
         return userMapper.toResponseDTO(save(user));
     }
@@ -146,6 +164,12 @@ public class UserService {
                       .collect(Collectors.toList());
         user.setHorariosDisponiveis(horarios);
         User savedUser = userRepository.save(user);
+              if(role.equals(UserRole.MENTOR)){
+            MentorMembership newMentor = new MentorMembership();
+            newMentor.setAdmin(getCurrentUser());
+            newMentor.setMentor(user);
+            mentorMembershipRepository.save(newMentor);
+        }
         return userMapper.toResponseDTO(savedUser);
     }
 
@@ -345,5 +369,21 @@ public class UserService {
         }).collect(Collectors.toList());
     }
 
-    
+    public String getBackgroundColor() {
+    User user = getCurrentUser();
+    BackgroundColorEnum color = user.getBackgroundColor();
+    return color != null ? color.getHex() : null;
+}
+
+public String changeBackgroundColor(String color) {
+    User user = getCurrentUser();
+    try {
+        BackgroundColorEnum newColor = BackgroundColorEnum.fromString(color);
+        user.setBackgroundColor(newColor);
+        userRepository.save(user);
+        return newColor.getHex();
+    } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException("Invalid color. Allowed values: DARK_BLUE, BLACK, WHITE or hex codes #1E2A38, #000000, #FFFFFF.");
+    }
+}
 }

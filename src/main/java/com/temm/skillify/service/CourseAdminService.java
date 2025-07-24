@@ -33,8 +33,9 @@ public class CourseAdminService {
 
     public List<CourseResponseDTO> findAllCourses() {
         User currentUser = getCurrentUser();
+        System.out.println("User id" + currentUser.getId());
         return courseRepository.findAll().stream()
-                .filter(course -> course.getCreator().equals(currentUser))
+                .filter(course -> course.getCreator().getId().equals(currentUser.getId()))
                 .map(courseMapper::toResponseDTO)
                 .collect(Collectors.toList());
     }

@@ -38,6 +38,16 @@ public class UserAdminController {
     public ResponseEntity<List<UserResponseDTO>> getAllMentors() {
         return ResponseEntity.ok(userService.findAllMentorsDto());
     }
+
+    @GetMapping("/mentors/count")
+    public ResponseEntity<Integer> getMentorsCount(Authentication authentication){
+        return ResponseEntity.ok(userService.findAllMentorsCount(authentication));
+    }
+
+       @GetMapping("/students/count")
+    public ResponseEntity<Long> getStudentsCount(Authentication authentication){
+        return ResponseEntity.ok(userService.findAllStudentsCount(authentication));
+    }
     
     @PostMapping
     public ResponseEntity<UserResponseDTO> createUser(@RequestBody RegisterRequest user) {
@@ -72,4 +82,15 @@ public class UserAdminController {
             })
             .orElse(ResponseEntity.notFound().build());
     }
+
+    @GetMapping("/background-color")
+public ResponseEntity<String> getBackgroundColor(Authentication authentication) {
+    return ResponseEntity.ok(userService.getBackgroundColor());
+}
+
+@PostMapping("/background-color")
+public ResponseEntity<String> changeBackgroundColor(
+        @RequestBody String color, Authentication authentication) {
+    return ResponseEntity.ok(userService.changeBackgroundColor(color));
+}
 }

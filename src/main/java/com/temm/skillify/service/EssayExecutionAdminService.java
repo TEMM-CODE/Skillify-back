@@ -1,6 +1,8 @@
 package com.temm.skillify.service;
 
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import com.temm.skillify.model.dto.response.EssayExecutionResponseDTO;
 import com.temm.skillify.model.dto.request.EssayExecutionCreateDTO;
@@ -20,9 +22,20 @@ public class EssayExecutionAdminService {
     private final EssayExecutionRepository essayExecutionRepository;
     private final UserRepository userRepository;
     private final EssayExecutionMapper essayExecutionMapper;
+
+        public Optional<User> findByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+        public User getUserFromAuthentication(Authentication authentication) {
+        String email = authentication.getName();
+        return findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+    }
     
-    public List<EssayExecutionResponseDTO> findAll() {
-        List<EssayExecution> executions = essayExecutionRepository.findAll();
+    public List<EssayExecutionResponseDTO> findAll(Authentication authentication) {
+        User user = getUserFromAuthentication(authentication);
+        List<EssayExecution> executions = essayExecutionRepository.findByAdmin(user);
         return essayExecutionMapper.toResponseDTOList(executions);
     }
     

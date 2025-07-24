@@ -11,6 +11,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.temm.skillify.model.categories.BaseEntity;
+import com.temm.skillify.model.enums.BackgroundColorEnum;
 import com.temm.skillify.model.enums.UserRole;
 
 import java.time.LocalTime;
@@ -44,6 +45,9 @@ public class User extends BaseEntity implements UserDetails {
 
     private int level;
     private int xp;
+    
+    @Enumerated(EnumType.STRING)
+    private BackgroundColorEnum backgroundColor;
 
 
     @ElementCollection

@@ -116,4 +116,15 @@ public ResponseEntity<List<StudentRankingResponseDTO>> getStudentRankingsForAllC
         userMentorService.updateStudentClassrooms(studentId, classroomIds, mentor);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/background-color")
+public ResponseEntity<String> getBackgroundColor(Authentication authentication) {
+    return ResponseEntity.ok(userMentorService.getBackgroundColor());
+}
+
+@PostMapping("/background-color")
+public ResponseEntity<String> changeBackgroundColor(
+        @RequestBody String color, Authentication authentication) {
+    return ResponseEntity.ok(userMentorService.changeBackgroundColor(color));
+}
 }
