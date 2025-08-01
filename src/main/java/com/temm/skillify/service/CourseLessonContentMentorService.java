@@ -5,6 +5,7 @@ import com.temm.skillify.model.dto.response.CourseLessonContentResponseDTO;
 import com.temm.skillify.model.entity.CourseLesson;
 import com.temm.skillify.model.entity.CourseLessonContent;
 import com.temm.skillify.model.entity.User;
+import com.temm.skillify.model.enums.CourseLessonContentType;
 import com.temm.skillify.model.enums.UserRole;
 import com.temm.skillify.model.mapper.CourseLessonContentMapper;
 import com.temm.skillify.repository.CourseLessonContentRepository;
@@ -16,6 +17,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,6 +29,7 @@ public class CourseLessonContentMentorService {
     private final CourseRepository courseRepository;
     private final CourseLessonContentMapper courseLessonContentMapper;
     private final CourseLessonRepository courseLessonRepository;
+    private final S3Service s3Service;
 
     private User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -41,19 +44,19 @@ public class CourseLessonContentMentorService {
         }
 
         List<String> courseIds = courseRepository.findByCreator(currentMentor)
-            .stream()
-            .map(course -> course.getId())
-            .collect(Collectors.toList());
+                .stream()
+                .map(course -> course.getId())
+                .collect(Collectors.toList());
 
         List<CourseLessonContent> contents = courseLessonContentRepository
-            .findAll()
-            .stream()
-            .filter(content -> courseIds.contains(content.getCourseLesson().getCourse().getId()))
-            .collect(Collectors.toList());
+                .findAll()
+                .stream()
+                .filter(content -> courseIds.contains(content.getCourseLesson().getCourse().getId()))
+                .collect(Collectors.toList());
         
         return contents.stream()
-            .map(courseLessonContentMapper::toResponseDTO)
-            .collect(Collectors.toList());
+                .map(courseLessonContentMapper::toResponseDTO)
+                .collect(Collectors.toList());
     }
 
     public CourseLessonContentResponseDTO getCourseLessonContentById(String id) {
@@ -64,11 +67,11 @@ public class CourseLessonContentMentorService {
         }
 
         CourseLessonContent content = courseLessonContentRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Course lesson content not found"));
+                .orElseThrow(() -> new RuntimeException("Course lesson content not found"));
 
         boolean isMentorCourse = courseRepository.findById(content.getCourseLesson().getCourse().getId())
-            .map(course -> course.getCreator().getId().equals(currentMentor.getId()))
-            .orElse(false);
+                .map(course -> course.getCreator().getId().equals(currentMentor.getId()))
+                .orElse(false);
 
         if (!isMentorCourse) {
             throw new SecurityException("You don't have permission to view this course lesson content");
@@ -87,10 +90,25 @@ public class CourseLessonContentMentorService {
         CourseLessonContent content = new CourseLessonContent();
         content.setPosition(dto.getPosition());
         content.setType(dto.getType());
-        content.setValue(dto.getValue());
-        CourseLesson existingCourseLesson = courseLessonRepository.findById(dto.getCourseLessonId()).orElseThrow();
-        content.setCourseLesson(existingCourseLesson);
+        
+        CourseLesson existingCourseLesson = courseLessonRepository.findById(dto.getCourseLessonId())
+                .orElseThrow(() -> new EntityNotFoundException("Course lesson not found"));
 
+
+
+        // Handle video upload
+        if (dto.getType() == CourseLessonContentType.VIDEO && dto.getVideoFile() != null) {
+            try {
+                String s3Key = s3Service.uploadVideo(dto.getVideoFile(), dto.getCourseLessonId(), dto.getPosition());
+                content.setValue(s3Key);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to upload video to S3", e);
+            }
+        } else {
+            content.setValue(dto.getValue());
+        }
+
+        content.setCourseLesson(existingCourseLesson);
         CourseLessonContent savedContent = courseLessonContentRepository.save(content);
         return courseLessonContentMapper.toResponseDTO(savedContent);
     }
@@ -103,22 +121,34 @@ public class CourseLessonContentMentorService {
         }
 
         CourseLessonContent content = courseLessonContentRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Course lesson content not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Course lesson content not found"));
 
-        /*boolean isMentorCourse = courseRepository.findById(content.getCourseLesson().getCourse().getId())
-            .map(course -> course.getCreator().getId().equals(currentMentor.getId()))
-            .orElse(false);
+        boolean isMentorCourse = courseRepository.findById(content.getCourseLesson().getCourse().getId())
+                .map(course -> course.getCreator().getId().equals(currentMentor.getId()))
+                .orElse(false);
 
         if (!isMentorCourse) {
             throw new SecurityException("You don't have permission to update this course lesson content");
-        } */
+        }
 
         content.setPosition(dto.getPosition());
         content.setType(dto.getType());
-        content.setValue(dto.getValue());
-        CourseLesson existingCourseLesson = courseLessonRepository.findById(dto.getCourseLessonId()).orElseThrow();
+        
+        CourseLesson existingCourseLesson = courseLessonRepository.findById(dto.getCourseLessonId())
+                .orElseThrow(() -> new EntityNotFoundException("Course lesson not found"));
         content.setCourseLesson(existingCourseLesson);
 
+        // Handle video upload
+        if (dto.getType() == CourseLessonContentType.VIDEO && dto.getVideoFile() != null) {
+            try {
+                String s3Key = s3Service.uploadVideo(dto.getVideoFile(), dto.getCourseLessonId(), dto.getPosition());
+                content.setValue(s3Key);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to upload video to S3", e);
+            }
+        } else {
+            content.setValue(dto.getValue());
+        }
 
         CourseLessonContent updatedContent = courseLessonContentRepository.save(content);
         return courseLessonContentMapper.toResponseDTO(updatedContent);
@@ -132,7 +162,20 @@ public class CourseLessonContentMentorService {
         }
 
         CourseLessonContent content = courseLessonContentRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Course lesson content not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Course lesson content not found"));
+
+        boolean isMentorCourse = courseRepository.findById(content.getCourseLesson().getCourse().getId())
+                .map(course -> course.getCreator().getId().equals(currentMentor.getId()))
+                .orElse(false);
+
+        if (!isMentorCourse) {
+            throw new SecurityException("You don't have permission to delete this course lesson content");
+        }
+
+        // Optional: Delete video from S3 if it's a video
+        if (content.getType() == CourseLessonContentType.VIDEO) {
+            s3Service.deleteObject(content.getValue()); // Add deleteObject method to S3Service
+        }
 
         // Get the associated CourseLesson
         String courseLessonId = content.getCourseLesson().getId();
@@ -142,10 +185,10 @@ public class CourseLessonContentMentorService {
 
         // Reassign positions for remaining content in the same CourseLesson
         List<CourseLessonContent> remainingContents = courseLessonContentRepository
-            .findByCourseLessonId(courseLessonId)
-            .stream()
-            .sorted((a, b) -> Integer.compare(a.getPosition(), b.getPosition()))
-            .collect(Collectors.toList());
+                .findByCourseLessonId(courseLessonId)
+                .stream()
+                .sorted((a, b) -> Integer.compare(a.getPosition(), b.getPosition()))
+                .collect(Collectors.toList());
 
         // Update positions sequentially starting from 1
         for (int i = 0; i < remainingContents.size(); i++) {

@@ -12,4 +12,5 @@ public class CourseLessonContentResponseDTO extends BaseResponseDTO {
     private int position;
     private CourseLessonContentType type;
     private String value;
+    private String url;
 }

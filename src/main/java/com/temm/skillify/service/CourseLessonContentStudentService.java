@@ -30,37 +30,37 @@ public class CourseLessonContentStudentService {
         
         // 1. Get all classrooms the student is enrolled in
         List<String> classroomIds = classroomRepository.findByStudentsContaining(student)
-            .stream()
-            .map(Classroom::getId)
-            .collect(Collectors.toList());
+                .stream()
+                .map(Classroom::getId)
+                .collect(Collectors.toList());
         
         // 2. Get all course IDs from those classrooms
         Set<String> courseIds = classroomRepository.findByStudentsContaining(student)
-            .stream()
-            .flatMap(classroom -> classroom.getCourses().stream())
-            .map(course -> course.getId())
-            .collect(Collectors.toSet());
+                .stream()
+                .flatMap(classroom -> classroom.getCourses().stream())
+                .map(course -> course.getId())
+                .collect(Collectors.toSet());
         
         // 3. Get all content for the student's enrolled courses
         return courseLessonContentRepository.findAll()
-            .stream()
-            .filter(content -> courseIds.contains(content.getCourseLesson().getCourse().getId()))
-            .map(contentMapper::toResponseDTO)
-            .collect(Collectors.toList());
+                .stream()
+                .filter(content -> courseIds.contains(content.getCourseLesson().getCourse().getId()))
+                .map(contentMapper::toResponseDTO) // Mapper handles video URLs
+                .collect(Collectors.toList());
     }
     
     public CourseLessonContentResponseDTO getCourseLessonContentById(String id, Authentication authentication) {
         User student = userService.getUserFromAuthentication(authentication);
         
         CourseLessonContent content = courseLessonContentRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Course lesson content not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Course lesson content not found with id: " + id));
         
         // Verify access through classroom enrollment
         if (!isStudentEnrolledInCourse(content.getCourseLesson().getCourse().getId(), student)) {
             throw new EntityNotFoundException("Course lesson content not found or not accessible");
         }
         
-        return contentMapper.toResponseDTO(content);
+        return contentMapper.toResponseDTO(content); // Mapper handles video URLs
     }
     
     public List<CourseLessonContentResponseDTO> getCourseLessonContentsByLessonId(String lessonId, Authentication authentication) {
@@ -78,14 +78,14 @@ public class CourseLessonContentStudentService {
         }
         
         return contents.stream()
-            .map(contentMapper::toResponseDTO)
-            .collect(Collectors.toList());
+                .map(contentMapper::toResponseDTO) // Mapper handles video URLs
+                .collect(Collectors.toList());
     }
 
     private boolean isStudentEnrolledInCourse(String courseId, User student) {
         return classroomRepository.findByStudentsContaining(student)
-            .stream()
-            .flatMap(classroom -> classroom.getCourses().stream())
-            .anyMatch(course -> course.getId().equals(courseId));
+                .stream()
+                .flatMap(classroom -> classroom.getCourses().stream())
+                .anyMatch(course -> course.getId().equals(courseId));
     }
 }

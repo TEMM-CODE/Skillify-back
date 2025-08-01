@@ -1,5 +1,7 @@
 package com.temm.skillify.model.dto.request;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import com.temm.skillify.model.enums.CourseLessonContentType;
 import lombok.Data;
 
@@ -9,4 +11,5 @@ public class CourseLessonContentCreateDTO {
     private int position;
     private CourseLessonContentType type;
     private String value;
+    private MultipartFile videoFile;
 }

@@ -29,23 +29,21 @@ public class CourseLessonContentMentorController {
         return ResponseEntity.ok(contentService.getCourseLessonContentById(id));
     }
 
-    @PostMapping
-    public ResponseEntity<CourseLessonContentResponseDTO> createContent(@RequestBody CourseLessonContentCreateDTO contentDTO) {
-        // Assuming the service would have a create method
+    @PostMapping(consumes = {"multipart/form-data"})
+    public ResponseEntity<CourseLessonContentResponseDTO> createContent(
+            @ModelAttribute CourseLessonContentCreateDTO contentDTO) {
         return new ResponseEntity<>(contentService.createContent(contentDTO), HttpStatus.CREATED);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", consumes = {"multipart/form-data"})
     public ResponseEntity<CourseLessonContentResponseDTO> updateContent(
             @PathVariable String id,
-            @RequestBody CourseLessonContentCreateDTO contentDTO) {
-        // Assuming the service would have an update method
+            @ModelAttribute CourseLessonContentCreateDTO contentDTO) {
         return ResponseEntity.ok(contentService.updateContent(id, contentDTO));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteContent(@PathVariable String id) {
-        // Assuming the service would have a delete method
         contentService.deleteContent(id);
         return ResponseEntity.noContent().build();
     }

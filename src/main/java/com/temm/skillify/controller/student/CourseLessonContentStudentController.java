@@ -1,6 +1,5 @@
 package com.temm.skillify.controller.student;
 
-
 import com.temm.skillify.model.dto.response.CourseLessonContentResponseDTO;
 import com.temm.skillify.service.CourseLessonContentStudentService;
 import lombok.RequiredArgsConstructor;
