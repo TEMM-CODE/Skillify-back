@@ -2,6 +2,7 @@ package com.temm.skillify.service;
 
 import com.temm.skillify.model.dto.RegisterRequest;
 import com.temm.skillify.model.dto.response.MentorProgressStudent;
+import com.temm.skillify.model.dto.response.MonthlyStudentsXpDTO;
 import com.temm.skillify.model.dto.response.StudentRankingPositionDTO;
 import com.temm.skillify.model.dto.response.StudentRankingResponseDTO;
 import com.temm.skillify.model.dto.response.UserResponseDTO;
@@ -32,6 +33,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -67,9 +71,11 @@ public class UserMentorService {
     public List<MentorProgressStudent> getStudentsForClassroom(String classroomId, User mentor) {
         // Find classroom by ID
         Optional<Classroom> classroomOpt = classroomRepository.findById(classroomId);
+        System.out.println("classroom found");
         
         // Check if classroom exists and is owned by the mentor
-        if (classroomOpt.isEmpty() || !classroomOpt.get().getMentor().equals(mentor)) {
+        if (classroomOpt.isEmpty() || !classroomOpt.get().getMentor().getId().equals(mentor.getId())) {
+            System.out.println(classroomOpt.get().getMentor().getName());
             return List.of();
         }
         
@@ -334,5 +340,39 @@ public String changeBackgroundColor(String color) {
         throw new IllegalArgumentException("Invalid color. Allowed values: DARK_BLUE, BLACK, WHITE or hex codes #1E2A38, #000000, #FFFFFF.");
     }
 }
+
+
+    @Transactional(readOnly = true)
+    public List<MonthlyStudentsXpDTO> getXpCountAllStudentsMonthly() {
+        User mentor = getCurrentUser();
+        List<Classroom> classrooms = classroomRepository.findByMentor(mentor);
+        Set<String> studentIds = classrooms.stream()
+            .flatMap(classroom -> classroom.getStudents().stream().map(User::getId))
+            .collect(Collectors.toSet());
+        
+        LocalDate now = LocalDate.now();
+        List<MonthlyStudentsXpDTO> result = new ArrayList<>();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM");
+
+        for (int i = 0; i < 6; i++) {
+            YearMonth month = YearMonth.from(now.minusMonths(i));
+            LocalDate startOfMonth = month.atDay(1);
+            LocalDate endOfMonth = month.atEndOfMonth();
+            
+            int totalXp = experienceEventRepository.findByUserIdInAndCreatedAtBetween(studentIds, 
+                startOfMonth.atStartOfDay(), 
+                endOfMonth.atTime(23, 59, 59))
+                .stream()
+                .mapToInt(ExperienceEvent::getXp)
+                .sum();
+            
+            MonthlyStudentsXpDTO dto = new MonthlyStudentsXpDTO();
+            dto.setMonth(month.format(formatter));
+            dto.setTotalXp(totalXp);
+            result.add(dto);
+        }
+        
+        return result;
+    }
 
 }

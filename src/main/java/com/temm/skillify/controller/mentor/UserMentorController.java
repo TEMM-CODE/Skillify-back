@@ -3,6 +3,7 @@ package com.temm.skillify.controller.mentor;
 
 import com.temm.skillify.model.dto.RegisterRequest;
 import com.temm.skillify.model.dto.response.MentorProgressStudent;
+import com.temm.skillify.model.dto.response.MonthlyStudentsXpDTO;
 import com.temm.skillify.model.dto.response.StudentRankingResponseDTO;
 import com.temm.skillify.model.dto.response.UserResponseDTO;
 import com.temm.skillify.model.entity.User;
@@ -127,4 +128,10 @@ public ResponseEntity<String> changeBackgroundColor(
         @RequestBody String color, Authentication authentication) {
     return ResponseEntity.ok(userMentorService.changeBackgroundColor(color));
 }
+
+  @GetMapping("/xp-monthly")
+    public ResponseEntity<List<MonthlyStudentsXpDTO>> getXpCountAllStudentsMonthly() {
+        List<MonthlyStudentsXpDTO> xpMonthly = userMentorService.getXpCountAllStudentsMonthly();
+        return ResponseEntity.ok(xpMonthly);
+    }
 }
