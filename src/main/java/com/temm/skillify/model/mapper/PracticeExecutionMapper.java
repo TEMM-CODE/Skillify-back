@@ -58,13 +58,6 @@ public class PracticeExecutionMapper {
             execution.setStudent(student);
         }
 
-        // Set practice
-        if (dto.getPracticeId() != null) {
-            Practice practice = new Practice();
-            practice.setId(dto.getPracticeId());
-            execution.setPractice(practice);
-        }
-
         // Note: SelectedAnswers should be set separately in service layer with full Option objects
         
         return execution;

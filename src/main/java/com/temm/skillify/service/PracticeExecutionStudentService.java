@@ -112,7 +112,9 @@ public class PracticeExecutionStudentService {
         }
 
         PracticeExecution execution = practiceExecutionMapper.toEntity(createDTO);
+        execution.setPractice(practice);
         PracticeExecution savedExecution = practiceExecutionRepository.save(execution);
+
 
         int questionCount = practice.getQuestions() != null ? practice.getQuestions().size() : 0;
         if (questionCount > 0) {
@@ -137,7 +139,6 @@ public class PracticeExecutionStudentService {
                 .filter(goal -> goal.getType() == GoalType.QUESTION)
                 .collect(Collectors.toList());
 
-        // Process each question goal
         for (Goal goal : questionGoals) {
             // 3) Find practice executions done during the goal's time period, one per distinct practice
             List<PracticeExecution> relevantExecutions = practiceExecutionRepository.findByStudentId(currentStudent.getId()).stream()

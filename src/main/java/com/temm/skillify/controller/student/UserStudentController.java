@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/student/users")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ROLE_ESTUDANTE')")
+@PreAuthorize("hasAnyRole('ESTUDANTE', 'MENTOR', 'ADMIN')")
 public class UserStudentController {
 
     private final MessageService messageService;
