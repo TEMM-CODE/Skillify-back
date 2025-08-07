@@ -8,7 +8,7 @@ services:
     envVars:
       # MySQL Database Configuration
       - key: SPRING_DATASOURCE_URL
-        value: jdbc:mysql://147.93.3.1:3306/ead?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+        value: postgresql://ead_ydje_user:DjFxnUprPFE1w1yqF6y0yyplbDTyS4hk@dpg-d2afgl63jp1c73ajebr0-a/ead_ydje
       - key: SPRING_DATASOURCE_USERNAME
         value: ead_ydje_user
       - key: SPRING_DATASOURCE_PASSWORD
