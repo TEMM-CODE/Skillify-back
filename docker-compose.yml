@@ -7,7 +7,7 @@ services:
       - "8082:8082"
     environment:
       # MySQL Database Configuration
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://ead_ydje_user:DjFxnUprPFE1w1yqF6y0yyplbDTyS4hk@dpg-d2afgl63jp1c73ajebr0-a/ead_ydje
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://dpg-d2afgl63jp1c73ajebr0-a:5432/ead_ydje
       - SPRING_DATASOURCE_USERNAME=ead_ydje_user
       - SPRING_DATASOURCE_PASSWORD=DjFxnUprPFE1w1yqF6y0yyplbDTyS4hk
       - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
