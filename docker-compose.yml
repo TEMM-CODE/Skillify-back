@@ -14,6 +14,7 @@ services:
       
       # JPA Configuration
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
       
       # JWT Configuration
       - APPLICATION_SECURITY_JWT_SECRET_KEY=vF8gJ5U2Vn9pYqZ3q8NdPzWbGzF6Xt5+JNRVh4J3hWY=
