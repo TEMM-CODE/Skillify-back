@@ -1,19 +1,47 @@
 version: '3.8'
 
 services:
-  mariadb:
-    image: mariadb:latest
-    container_name: skillify_mariadb
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: skillifydb
-      MYSQL_USER: skillifyuser
-      MYSQL_PASSWORD: skillifypass
+  skillify-api:
+    build: .
     ports:
-      - "3306:3306"
-    volumes:
-      - mariadb_data:/var/lib/mysql
-
-volumes:
-  mariadb_data:
+      - "8082:8082"
+    environment:
+      # MySQL Database Configuration
+      - SPRING_DATASOURCE_URL=jdbc:mysql://147.93.3.1:3306/ead?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=ead
+      - SPRING_DATASOURCE_PASSWORD=Toum1vZZS1O2iwoTwaIl
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=com.mysql.cj.jdbc.Driver
+      
+      # JPA Configuration
+      - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.MySQL8Dialect
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      
+      # JWT Configuration
+      - APPLICATION_SECURITY_JWT_SECRET_KEY=vF8gJ5U2Vn9pYqZ3q8NdPzWbGzF6Xt5+JNRVh4J3hWY=
+      - APPLICATION_SECURITY_JWT_EXPIRATION=86400000
+      
+      # AWS S3 Configuration
+      - AWS_ACCESS_KEY_ID=1aa131e4bcb24ea1b63959c6fe9ee24d
+      - AWS_SECRET_ACCESS_KEY=3882b2d9b0a468e9b331587d3992597d
+      - AWS_REGION=default
+      - AWS_S3_BUCKET=ead
+      - AWS_S3_ENDPOINT=https://usc1.contabostorage.com
+      
+      # Performance Settings
+      - SPRING_TASK_EXECUTION_POOL_CORE_SIZE=10
+      - SPRING_TASK_EXECUTION_POOL_MAX_SIZE=100
+      - SPRING_TASK_EXECUTION_POOL_QUEUE_CAPACITY=2000
+      - SERVER_TOMCAT_THREADS_MAX=500
+      - SERVER_TOMCAT_THREADS_MIN_SPARE=20
+      
+      # File Upload Settings
+      - SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE=10MB
+      - SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE=10MB
+      
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

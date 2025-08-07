@@ -6,19 +6,17 @@ services:
     dockerfilePath: ./Dockerfile
     dockerContext: .
     envVars:
-      # Database Configuration
+      # MySQL Database Configuration
       - key: SPRING_DATASOURCE_URL
-        value: jdbc:h2:file:./data/skillifydb;DB_CLOSE_ON_EXIT=FALSE;AUTO_RECONNECT=TRUE
+        value: jdbc:mysql://147.93.3.1:3306/ead?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
       - key: SPRING_DATASOURCE_USERNAME
-        value: sa
+        value: ead_ydje_user
       - key: SPRING_DATASOURCE_PASSWORD
-        value: password
+        value: DjFxnUprPFE1w1yqF6y0yyplbDTyS4hk
       - key: SPRING_DATASOURCE_DRIVER_CLASS_NAME
-        value: org.h2.Driver
+        value: org.postgresql.Driver
       
       # JPA Configuration
-      - key: SPRING_JPA_DATABASE_PLATFORM
-        value: org.hibernate.dialect.H2Dialect
       - key: SPRING_JPA_HIBERNATE_DDL_AUTO
         value: update
       
@@ -65,9 +63,3 @@ services:
         value: production
     
     healthCheckPath: /actuator/health
-    
-    # Persistent disk for H2 database
-    disk:
-      name: skillify-data
-      mountPath: /app/data
-      sizeGB: 1
