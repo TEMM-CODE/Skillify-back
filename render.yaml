@@ -1,0 +1,73 @@
+services:
+  - type: web
+    name: skillify-api
+    env: docker
+    plan: starter
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    envVars:
+      # Database Configuration
+      - key: SPRING_DATASOURCE_URL
+        value: jdbc:h2:file:./data/skillifydb;DB_CLOSE_ON_EXIT=FALSE;AUTO_RECONNECT=TRUE
+      - key: SPRING_DATASOURCE_USERNAME
+        value: sa
+      - key: SPRING_DATASOURCE_PASSWORD
+        value: password
+      - key: SPRING_DATASOURCE_DRIVER_CLASS_NAME
+        value: org.h2.Driver
+      
+      # JPA Configuration
+      - key: SPRING_JPA_DATABASE_PLATFORM
+        value: org.hibernate.dialect.H2Dialect
+      - key: SPRING_JPA_HIBERNATE_DDL_AUTO
+        value: update
+      
+      # JWT Configuration (Consider using Render's secret management)
+      - key: APPLICATION_SECURITY_JWT_SECRET_KEY
+        value: vF8gJ5U2Vn9pYqZ3q8NdPzWbGzF6Xt5+JNRVh4J3hWY=
+      - key: APPLICATION_SECURITY_JWT_EXPIRATION
+        value: 86400000
+      
+      # AWS S3 Configuration (Consider using Render's secret management)
+      - key: AWS_ACCESS_KEY_ID
+        value: 1aa131e4bcb24ea1b63959c6fe9ee24d
+      - key: AWS_SECRET_ACCESS_KEY
+        value: 3882b2d9b0a468e9b331587d3992597d
+      - key: AWS_REGION
+        value: default
+      - key: AWS_S3_BUCKET
+        value: ead
+      - key: AWS_S3_ENDPOINT
+        value: https://usc1.contabostorage.com
+      
+      # Performance Settings
+      - key: SPRING_TASK_EXECUTION_POOL_CORE_SIZE
+        value: 10
+      - key: SPRING_TASK_EXECUTION_POOL_MAX_SIZE
+        value: 100
+      - key: SPRING_TASK_EXECUTION_POOL_QUEUE_CAPACITY
+        value: 2000
+      - key: SERVER_TOMCAT_THREADS_MAX
+        value: 500
+      - key: SERVER_TOMCAT_THREADS_MIN_SPARE
+        value: 20
+      
+      # File Upload Settings
+      - key: SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE
+        value: 10MB
+      - key: SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE
+        value: 10MB
+        
+      # Application Settings
+      - key: SERVER_PORT
+        value: 8082
+      - key: SPRING_PROFILES_ACTIVE
+        value: production
+    
+    healthCheckPath: /actuator/health
+    
+    # Persistent disk for H2 database
+    disk:
+      name: skillify-data
+      mountPath: /app/data
+      sizeGB: 1
