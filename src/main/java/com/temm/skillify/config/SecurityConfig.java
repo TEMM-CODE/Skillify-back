@@ -46,6 +46,7 @@ public class SecurityConfig {
                 .requestMatchers("/sales-plans").permitAll()
                 .requestMatchers("/background").permitAll()
                 .requestMatchers("/pacotes-admin").permitAll()
+                .requestMatchers("/actuator").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/actuator/**").hasAnyAuthority(UserRole.MENTOR.getRole(), UserRole.ADMIN.getRole())
