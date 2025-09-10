@@ -5,14 +5,19 @@ import com.temm.skillify.model.dto.response.ClassroomResponseDTO;
 import com.temm.skillify.model.entity.Classroom;
 import com.temm.skillify.model.entity.ClassroomAccessToken;
 import com.temm.skillify.model.entity.Course;
+import com.temm.skillify.model.entity.MentorMembership;
 import com.temm.skillify.model.entity.User;
 import com.temm.skillify.model.mapper.ClassroomMapper;
 import com.temm.skillify.repository.ClassroomAccessTokenRepository;
 import com.temm.skillify.repository.ClassroomRepository;
 import com.temm.skillify.repository.CourseRepository;
+import com.temm.skillify.repository.MentorMembershipRepository;
 import com.temm.skillify.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -26,11 +31,25 @@ public class ClassroomAdminService {
     private final UserRepository userRepository;
     private final ClassroomMapper classroomMapper;
     private final CourseRepository courseRepository;
+    private final MentorMembershipRepository mentorMembershipRepository;
 
+  
     public List<ClassroomResponseDTO> findAllClassrooms() {
-        return classroomRepository.findAll().stream()
+        User currentAdmin = getCurrentUser();
+        List<User> mentors = mentorMembershipRepository.findByAdmin(currentAdmin)
+                .stream()
+                .map(MentorMembership::getMentor)
+                .collect(Collectors.toList());
+
+        return mentors.stream()
+                .flatMap(mentor -> classroomRepository.findByMentor(mentor).stream())
                 .map(classroomMapper::toResponseDTO)
                 .collect(Collectors.toList());
+    }
+
+    private User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return (User) authentication.getPrincipal();
     }
 
     public Optional<ClassroomResponseDTO> findClassroomById(String id) {

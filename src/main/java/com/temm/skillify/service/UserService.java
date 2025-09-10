@@ -101,9 +101,11 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public List<UserResponseDTO> findAllMentorsDto() {
-        return userRepository.findByRole(UserRole.MENTOR)
+   public List<UserResponseDTO> findAllMentorsDto() {
+        User currentAdmin = getCurrentUser();
+        return mentorMembershipRepository.findByAdmin(currentAdmin)
                 .stream()
+                .map(MentorMembership::getMentor)
                 .map(userMapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
