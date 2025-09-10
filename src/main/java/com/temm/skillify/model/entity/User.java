@@ -50,7 +50,7 @@ public class User extends BaseEntity implements UserDetails {
     private BackgroundColorEnum backgroundColor;
 
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "horarios_disponiveis", joinColumns = @JoinColumn(name = "profissional_id"))
     @Column(name = "horario")
     private List<LocalTime> horariosDisponiveis = new ArrayList<>();
