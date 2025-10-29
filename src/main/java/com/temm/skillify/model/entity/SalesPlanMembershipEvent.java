@@ -1,4 +1,5 @@
 package com.temm.skillify.model.entity;
+
 import com.temm.skillify.model.categories.BaseEntity;
 import com.temm.skillify.model.enums.PlanType;
 import com.temm.skillify.model.enums.SalesPlanMembershipType;
@@ -17,7 +18,6 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-
 public class SalesPlanMembershipEvent  extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -29,4 +29,8 @@ public class SalesPlanMembershipEvent  extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private SalesPlanMembershipType status;
+    
+    @OneToMany(mappedBy = "salesPlanMembershipEvent", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("position ASC")
+    private List<SalesPlanPayment> salesPlanPayments;
 }

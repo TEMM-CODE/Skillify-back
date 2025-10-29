@@ -1,5 +1,7 @@
 package com.temm.skillify.model.entity;
 
+import java.util.List;
+
 import com.temm.skillify.model.categories.BaseEntity;
 import com.temm.skillify.model.enums.SalesPlanMembershipType;
 import jakarta.persistence.*;
@@ -24,4 +26,10 @@ public class SalesPlanAdminMembershipEvent extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private SalesPlanMembershipType status;
+
+    @OneToMany(mappedBy = "salesPlanAdminMembershipEvent", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("position ASC")
+    private List<SalesPlanAdminPayment> salesPlanAdminPayments;
+
+
 }
