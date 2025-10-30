@@ -3,6 +3,8 @@ package com.temm.skillify.model.dto.response;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import com.temm.skillify.model.enums.AsaasEvent;
+
 import lombok.Data;
 
 @Data
@@ -17,4 +19,6 @@ public class SalesPlanAdminPaymentResponseDTO {
     private SalesPlanAdminMembershipEventReturnDTO salesPlanAdminMembershipEvent;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+     private String paymentLink;
+      private AsaasEvent status;
 }

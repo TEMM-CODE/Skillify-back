@@ -17,8 +17,8 @@ import com.temm.skillify.repository.SalesPlanAdminPaymentRepository;
 
 @Service
 @RequiredArgsConstructor
-@EventHandler(AsaasEvent.PAYMENT_RECEIVED)
-class PaymentReceivedHandler implements AsaasEventHandler {
+@EventHandler(AsaasEvent.PAYMENT_CONFIRMED)
+class PaymentConfirmedHandler implements AsaasEventHandler {
 
     private final SalesPlanAdminPaymentRepository salesPlanAdminPaymentRepository;
 
@@ -29,7 +29,7 @@ class PaymentReceivedHandler implements AsaasEventHandler {
         String externalRef = payload.getPayment().getExternalReference(); // your order id
         //usar external ou payment link pra chamar o service find
         SalesPlanAdminPayment payment = salesPlanAdminPaymentRepository.findByPaymentLink(paymentLink).get(0);
-        payment.setStatus(AsaasEvent.PAYMENT_RECEIVED);
+        payment.setStatus(AsaasEvent.PAYMENT_CONFIRMED);
         salesPlanAdminPaymentRepository.save(payment);
 
     }

@@ -34,6 +34,8 @@ public class SalesPlanAdminPaymentMapper {
         );
         dto.setCreatedAt(payment.getCreatedAt());
         dto.setUpdatedAt(payment.getUpdatedAt());
+        dto.setPaymentLink(payment.getPaymentLink());
+        dto.setStatus(payment.getStatus());
 
         return dto;
     }
@@ -50,6 +52,8 @@ public class SalesPlanAdminPaymentMapper {
         payment.setConfirmed(dto.isConfirmed());
         payment.setExpired(dto.isExpired());
         payment.setValue(dto.getValue());
+        payment.setPaymentLink(dto.getPaymentLink());
+        payment.setStatus(dto.getStatus());
 
         if (dto.getSalesPlanAdminMembershipEventId() != null) {
             SalesPlanAdminMembershipEvent event = new SalesPlanAdminMembershipEvent();
@@ -71,6 +75,8 @@ public class SalesPlanAdminPaymentMapper {
         payment.setConfirmed(dto.isConfirmed());
         payment.setExpired(dto.isExpired());
         payment.setValue(dto.getValue());
+        payment.setPaymentLink(dto.getPaymentLink());
+        payment.setStatus(dto.getStatus());
 
         if (dto.getSalesPlanAdminMembershipEventId() != null) {
             SalesPlanAdminMembershipEvent event = new SalesPlanAdminMembershipEvent();

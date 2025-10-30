@@ -1,5 +1,6 @@
 package com.temm.skillify.asaas.handler;
 
+
 import org.springframework.stereotype.Service;
 
 import com.temm.skillify.asaas.AsaasEventHandler;
@@ -17,8 +18,8 @@ import com.temm.skillify.repository.SalesPlanAdminPaymentRepository;
 
 @Service
 @RequiredArgsConstructor
-@EventHandler(AsaasEvent.PAYMENT_RECEIVED)
-class PaymentReceivedHandler implements AsaasEventHandler {
+@EventHandler(AsaasEvent.PAYMENT_AUTHORIZED)
+class PaymentAuthorizedHandler implements AsaasEventHandler {
 
     private final SalesPlanAdminPaymentRepository salesPlanAdminPaymentRepository;
 
@@ -29,7 +30,7 @@ class PaymentReceivedHandler implements AsaasEventHandler {
         String externalRef = payload.getPayment().getExternalReference(); // your order id
         //usar external ou payment link pra chamar o service find
         SalesPlanAdminPayment payment = salesPlanAdminPaymentRepository.findByPaymentLink(paymentLink).get(0);
-        payment.setStatus(AsaasEvent.PAYMENT_RECEIVED);
+        payment.setStatus(AsaasEvent.PAYMENT_AUTHORIZED);
         salesPlanAdminPaymentRepository.save(payment);
 
     }
