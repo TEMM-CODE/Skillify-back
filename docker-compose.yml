@@ -6,15 +6,16 @@ services:
     ports:
       - "8082:8082"
     environment:
-      # MySQL Database Configuration
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://dpg-d2afgl63jp1c73ajebr0-a:5432/ead_ydje
-      - SPRING_DATASOURCE_USERNAME=ead_ydje_user
-      - SPRING_DATASOURCE_PASSWORD=DjFxnUprPFE1w1yqF6y0yyplbDTyS4hk
-      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
+      # MariaDB Database Configuration
+      - SPRING_DATASOURCE_URL=jdbc:mariadb://temm_ead:3306/temm_ead
+      - SPRING_DATASOURCE_USERNAME=melissa
+      - SPRING_DATASOURCE_PASSWORD=faisca
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.mariadb.jdbc.Driver
       
       # JPA Configuration
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-      - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
+      - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.MariaDBDialect
+      - SPRING_JPA_SHOW_SQL=true
       
       # JWT Configuration
       - APPLICATION_SECURITY_JWT_SECRET_KEY=vF8gJ5U2Vn9pYqZ3q8NdPzWbGzF6Xt5+JNRVh4J3hWY=
@@ -45,3 +46,22 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    depends_on:
+      - mariadb
+
+  mariadb:
+    image: mariadb:10.11
+    container_name: temm_ead
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password_here
+      MYSQL_DATABASE: temm_ead
+      MYSQL_USER: melissa
+      MYSQL_PASSWORD: faisca
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    restart: unless-stopped
+
+volumes:
+  mariadb_data:
